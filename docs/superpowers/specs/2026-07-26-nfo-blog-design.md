@@ -85,7 +85,7 @@ date: 2026-07-26
 tags: ["bug bounty", "writeup"]
 draft: false
 summary: ""          # bo'sh bo'lsa matnning birinchi qismidan olinadi
-id: 3                # ixtiyoriy, 6.1-bo'limga qarang
+id: 3                # ixtiyoriy, 5.1-bo'limga qarang
 ---
 ```
 
@@ -119,7 +119,7 @@ static/admin/
 Repo nomi `blog` deb olindi. Boshqa nom xohlasang, u faqat shu bitta joyda va Cloudflare
 Pages ulanishida o'zgaradi.
 
-CMS'dagi post formasi 5.1-bo'limdagi frontmatter maydonlariga aynan mos keladi:
+CMS'dagi post formasi 5-bo'limdagi frontmatter maydonlariga aynan mos keladi:
 title (matn), date (sana), tags (ro'yxat), draft (belgi), summary (matn), body (markdown).
 
 ### 6.1 OAuth oqimi
