@@ -29,9 +29,12 @@ Ochiladi: <http://localhost:1313>
 
 ## Yangi post — terminal
 
+Sayt ikki tilli. Ingliz — asosiy til (`content/en/`), o'zbek `/uz/` ostida
+(`content/uz/`).
+
 ```bash
-hugo new posts/cache-poisoning-to-stored-xss.md
-$EDITOR content/posts/cache-poisoning-to-stored-xss.md
+hugo new content/en/posts/cache-poisoning-to-stored-xss.md
+$EDITOR content/en/posts/cache-poisoning-to-stored-xss.md
 # draft: false qil, keyin:
 git commit -am "post: cache poisoning to stored xss" && git push
 ```
@@ -43,6 +46,7 @@ Frontmatter:
 title: "Cache Poisoning to Stored XSS"
 date: 2026-07-26T21:00:00+05:00
 tags: ["bug bounty", "writeup"]
+translationKey: cache-poisoning-to-stored-xss
 draft: false
 summary: ""     # bo'sh qoldirsang matnning boshidan olinadi
 ---
@@ -54,6 +58,58 @@ sanani yozsang, Hugo o'sha postni chiqarmaydi — bu xato emas, shunday mo'ljall
 
 Qolgan hamma narsa avtomatik: post raqami, o'qish vaqti, teg sahifalari, RSS, bosh
 sahifadagi post soni.
+
+## Ikki til
+
+Har post ikki tilda bo'lishi mumkin, lekin **majburiy emas** — tarjimasi yo'q post
+bemalol yashaydi, faqat unda til tugmasi o'chirilgan holatda ko'rinadi.
+
+Ikkovini bog'laydigan narsa — `translationKey`. Fayl nomlari har til uchun tabiiy
+bo'lishi mumkin:
+
+```
+content/en/posts/cache-poisoning.md      translationKey: cache-poisoning
+content/uz/posts/kesh-zaharlanishi.md    translationKey: cache-poisoning
+```
+
+Natija: `/posts/cache-poisoning/` va `/uz/posts/kesh-zaharlanishi/`, ikkovi
+bir-biriga havola qiladi va **bitta release raqamini** bo'lishadi.
+
+Interfeys so'zlari `i18n/en.toml` va `i18n/uz.toml` da. Yangi matn qo'shsang,
+ikkalasiga ham yoz — birida qolib ketsa Hugo kalitning o'zini chiqaradi.
+
+Sarlavha, `focus`, `tagline`, `description` har til uchun `hugo.toml` dagi
+`[languages.<til>.params]` da.
+
+## Chizmalar
+
+Ikki sintaksis qo'llab-quvvatlanadi.
+
+**GoAT** — ASCII chizma build paytida SVG'ga aylanadi. JavaScript yo'q, ranglar temaga
+ergashadi:
+
+````markdown
+```goat
+ .-----------.      .------------.
+ | attacker  +----->| CDN cache  |
+ '-----------'      '------------'
+```
+````
+
+**Mermaid** — haqiqiy sintaksis, brauzerda chiziladi:
+
+````markdown
+```mermaid
+flowchart TD
+    A[Find endpoint] --> B{Reflects a header?}
+    B -- yes --> C[Cache poisoning]
+```
+````
+
+Mermaid bundle'i (3.4 MB) `assets/js/mermaid.min.js` da lokal saqlanadi va **faqat**
+`mermaid` bloki bor sahifada yuklanadi. Boshqa postlar JavaScript'siz qoladi.
+
+To'liq namuna: `content/en/posts/diagram-reference.md` (doimiy qoralama).
 
 ## Yangi post — brauzer
 
@@ -128,6 +184,9 @@ base_url: https://sveltia-cms-auth.<sening-subdomening>.workers.dev
 - `static/admin/sveltia-cms.js` ataylab lokal saqlangan, CDN'dan yuklanmaydi: bu skript
   GitHub tokenini ushlaydi, demak buzilgan CDN = buzilgan repo. Versiya va sha256
   `static/admin/VERSION.txt` da.
+- Mermaid ham lokal (`assets/js/mermaid.min.js`, versiya `VERSION.txt` da) va
+  `securityLevel: 'strict'` bilan ishga tushadi — chizma yorlig'i ichidagi HTML
+  bajarilmaydi. CMS tokeni shu domenda turgani uchun bu muhim.
 
 ## Writeup chiqarishdan oldin
 
@@ -164,8 +223,9 @@ Hamma juftlik WCAG AA (4.5:1) dan o'tishi kerak; bezak elementlari uchun 3:1.
 
 ### Info bloki
 
-`hugo.toml` dagi `[params]`: `handle`, `focus`, `github`, `twitter`, `releaseName`,
-`tagline`.
+`hugo.toml` dagi global `[params]`: `handle`, `github`, `twitter`, `heroArtScale`.
+Tilga bog'liqlari (`releaseName`, `focus`, `tagline`, `description`) —
+`[languages.en.params]` va `[languages.uz.params]` da.
 
 ## Post raqami
 

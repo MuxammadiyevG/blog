@@ -1,36 +1,36 @@
 {{ define "header" }}
   {{- $posts := where site.RegularPages "Section" "posts" }}
-  <div class="subhead">info</div>
+  <div class="subhead">{{ i18n "info" }}</div>
   <div class="rel">{{ site.Params.releaseName }}</div>
 
   <div class="fields">
-    <div class="row"><span class="k">Handle</span><span class="dots"></span><span class="b">{{ site.Params.handle }}</span></div>
-    <div class="row"><span class="k">Focus</span><span class="dots"></span><span class="b">{{ site.Params.focus }}</span></div>
-    <div class="row"><span class="k">Posts</span><span class="dots"></span><span class="b">{{ printf "%03d" (len $posts) }}</span></div>
-    <div class="row"><span class="k">Mirror</span><span class="dots"></span><span class="b"><a href="https://github.com/{{ site.Params.github }}" rel="noopener noreferrer">github.com/{{ site.Params.github }}</a></span></div>
+    <div class="row"><span class="k">{{ i18n "fieldHandle" }}</span><span class="dots"></span><span class="b">{{ site.Params.handle }}</span></div>
+    <div class="row"><span class="k">{{ i18n "fieldFocus" }}</span><span class="dots"></span><span class="b">{{ site.Params.focus }}</span></div>
+    <div class="row"><span class="k">{{ i18n "fieldPosts" }}</span><span class="dots"></span><span class="b">{{ printf "%03d" (len $posts) }}</span></div>
+    <div class="row"><span class="k">{{ i18n "fieldMirror" }}</span><span class="dots"></span><span class="b"><a href="https://github.com/{{ site.Params.github }}" rel="noopener noreferrer">github.com/{{ site.Params.github }}</a></span></div>
   </div>
 {{ end }}
 
 {{ define "main" }}
   {{- with site.Params.tagline }}
-  <div class="stitle small">notes</div>
+  <div class="stitle small">{{ i18n "notes" }}</div>
   <div class="copy"><p style="text-align:center">{{ . }}</p></div>
   {{- end }}
 
   {{ partial "rule.html" . }}
 
-  <div class="stitle small">releases</div>
+  <div class="stitle small">{{ i18n "releases" }}</div>
 
+  {{- $posts := where site.RegularPages "Section" "posts" }}
   <div class="posts">
-    {{- $posts := where site.RegularPages "Section" "posts" }}
     {{- range first 10 $posts }}
       {{ partial "post-card.html" . }}
     {{- else }}
-      <p style="text-align:center">no releases yet.</p>
+      <p style="text-align:center">{{ i18n "noReleases" }}</p>
     {{- end }}
   </div>
 
-  {{- if gt (len (where site.RegularPages "Section" "posts")) 10 }}
-  <div class="pager"><a href="{{ "/posts/" | relURL }}">[ all posts ]</a></div>
+  {{- if gt (len $posts) 10 }}
+  <div class="pager"><a href="{{ "/posts/" | relLangURL }}">[ {{ i18n "allPosts" }} ]</a></div>
   {{- end }}
 {{ end }}

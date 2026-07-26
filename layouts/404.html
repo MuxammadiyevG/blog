@@ -1,11 +1,11 @@
 {{ define "header" }}
   <div class="subhead">404</div>
-  <div class="rel">file not found in this release</div>
+  <div class="rel">{{ i18n "notFoundTitle" }}</div>
 {{ end }}
 
 {{ define "main" }}
   <div class="copy">
-    <p style="text-align:center">that path does not exist.</p>
-    <p style="text-align:center"><a href="{{ "/" | relURL }}">[ back home ]</a></p>
+    <p style="text-align:center">{{ i18n "notFoundBody" }}</p>
+    <p style="text-align:center"><a href="{{ "/" | relLangURL }}">[ {{ i18n "backHome" }} ]</a></p>
   </div>
 {{ end }}

@@ -15,3 +15,21 @@ To upgrade:
   sha256sum static/admin/sveltia-cms.js     # then update this file
 
 Read the release notes before upgrading. Check that the diff is what you expect.
+
+---
+
+mermaid.min.js  (assets/js/mermaid.min.js)
+  package: mermaid
+  version: 11.16.0
+  source:  https://unpkg.com/mermaid@11.16.0/dist/mermaid.min.js
+  sha256:  74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b
+  size:    3.4 MB raw, ~0.9 MB gzipped
+
+Loaded only on pages containing a ```mermaid block, and initialised with
+securityLevel: 'strict' so diagram labels cannot render HTML.
+
+To upgrade:
+
+  V=<new-version>
+  curl -sL -o assets/js/mermaid.min.js "https://unpkg.com/mermaid@$V/dist/mermaid.min.js"
+  sha256sum assets/js/mermaid.min.js     # then update this file

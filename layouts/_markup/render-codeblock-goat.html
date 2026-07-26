@@ -1,0 +1,11 @@
+{{- /* ```goat fenced blocks become SVG at build time. Hugo does this natively, so a
+       GoAT diagram costs zero JavaScript and no external request. */ -}}
+{{- $d := diagrams.Goat (trim .Inner "\n") -}}
+<figure class="diagram diagram-goat">
+  <svg xmlns="http://www.w3.org/2000/svg"
+       class="goat"
+       role="img"
+       aria-label="{{ with .Attributes.alt }}{{ . }}{{ else }}diagram{{ end }}"
+       viewBox="0 0 {{ $d.Width }} {{ $d.Height }}"
+       width="{{ $d.Width }}" height="{{ $d.Height }}">{{ $d.Inner }}</svg>
+</figure>

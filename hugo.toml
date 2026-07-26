@@ -1,24 +1,48 @@
 baseURL = "https://blog.pages.dev/"
-locale = "en-us"
 title = "M1kr0"
-# Bare front-matter dates (2026-07-26) are read in this zone. Without it Hugo reads
-# them as UTC, so a post written in the evening looks future-dated and stays hidden.
-timeZone = "Asia/Tashkent"
 enableRobotsTXT = true
 enableEmoji = false
 summaryLength = 40
 
+# Bare front-matter dates (2026-07-26) are read in this zone. Without it Hugo reads
+# them as UTC, so a post written in the evening looks future-dated and stays hidden.
+timeZone = "Asia/Tashkent"
+
+defaultContentLanguage = "en"
+defaultContentLanguageInSubdir = false
+
+[languages]
+  [languages.en]
+    locale       = "en-us"
+    label        = "en"
+    weight       = 1
+    title        = "M1kr0"
+    contentDir   = "content/en"
+    [languages.en.params]
+      releaseName = "m1kr0.blog.release.v2026.nfo"
+      focus       = "Bug Bounty, Recon, Web"
+      tagline     = "exploring and learning random things"
+      description = "Bug bounty writeups, recon methodology and tooling notes."
+
+  [languages.uz]
+    locale       = "uz-uz"
+    label        = "uz"
+    weight       = 2
+    title        = "M1kr0"
+    contentDir   = "content/uz"
+    [languages.uz.params]
+      releaseName = "m1kr0.blog.release.v2026.nfo"
+      focus       = "Bug Bounty, Recon, Web"
+      tagline     = "tasodifiy narsalarni o'rganish"
+      description = "Bug bounty writeup'lari, recon metodologiyasi va asboblar haqida."
+
 [params]
-  handle      = "M1kr0"
-  focus       = "Bug Bounty, Recon, Web"
-  github      = "MuxammadiyevG"
-  twitter     = "GMuxammadi46746"
-  releaseName = "m1kr0.blog.release.v2026.nfo"
+  handle  = "M1kr0"
+  github  = "MuxammadiyevG"
+  twitter = "GMuxammadi46746"
   # "block" = hand-drawn banner at readable size
   # "image" = picture converted to text, drawn at 2.2px
   heroArtScale = "block"
-  tagline     = "exploring and learning random things"
-  description = "Bug bounty writeups, recon methodology and tooling notes."
 
 [taxonomies]
   tag = "tags"

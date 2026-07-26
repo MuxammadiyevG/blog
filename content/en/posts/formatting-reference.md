@@ -2,6 +2,7 @@
 title: "Formatting reference"
 date: 2026-07-25T23:00:00+05:00
 tags: ["meta"]
+translationKey: formatting-reference
 draft: true
 summary: "Every markdown element this theme styles. Kept as a draft so it never publishes."
 ---

@@ -2,6 +2,7 @@
 title: "Hello"
 date: 2026-07-25T21:00:00+05:00
 tags: ["meta"]
+translationKey: hello
 draft: false
 summary: "Why this blog exists and what will land here."
 ---

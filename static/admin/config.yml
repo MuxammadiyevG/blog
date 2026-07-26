@@ -1,4 +1,4 @@
-# Sveltia CMS — browser editor for content/posts/*.md
+# Sveltia CMS — browser editor for the post files in content/<lang>/posts/
 #
 # base_url must point at your deployed sveltia-cms-auth Cloudflare Worker.
 # Nothing secret lives in this file: the OAuth client secret stays a Worker secret.
@@ -16,10 +16,10 @@ public_folder: /uploads
 publish_mode: simple
 
 collections:
-  - name: posts
-    label: Posts
+  - name: posts_en
+    label: Posts (English)
     label_singular: Post
-    folder: content/posts
+    folder: content/en/posts
     create: true
     slug: '{{slug}}'
     extension: md
@@ -46,6 +46,11 @@ collections:
         default: []
         hint: 'lowercase, e.g. bug bounty, writeup, recon'
 
+      - name: translationKey
+        label: Translation key
+        widget: string
+        hint: 'same value in both languages links the two versions; keep it lowercase-with-dashes'
+
       - name: draft
         label: Draft
         widget: boolean
@@ -67,4 +72,60 @@ collections:
 
       - name: body
         label: Body
+        widget: markdown
+
+  - name: posts_uz
+    label: Postlar (o'zbekcha)
+    label_singular: Post
+    folder: content/uz/posts
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: yaml-frontmatter
+    preview_path: uz/posts/{{slug}}
+    sortable_fields: [date, title]
+    fields:
+      - name: title
+        label: Sarlavha
+        widget: string
+
+      - name: date
+        label: Sana
+        widget: datetime
+        format: YYYY-MM-DDTHH:mm:ssZ
+        picker_utc: false
+
+      - name: tags
+        label: Teglar
+        widget: list
+        required: false
+        default: []
+        hint: 'kichik harflarda, masalan: bug bounty, writeup, recon'
+
+      - name: translationKey
+        label: Tarjima kaliti
+        widget: string
+        hint: "inglizcha versiyadagi qiymat bilan bir xil bo'lsin — shu ikkovini bog'laydi"
+
+      - name: draft
+        label: Qoralama
+        widget: boolean
+        default: true
+        hint: "yoqilgan = chiqmaydi; chiqarish uchun o'chir"
+
+      - name: summary
+        label: Qisqacha
+        widget: string
+        required: false
+        hint: "ro'yxat uchun bir qator; bo'sh qoldirsang matn boshidan olinadi"
+
+      - name: id
+        label: Qotirilgan raqam
+        widget: number
+        required: false
+        value_type: int
+        hint: "bo'sh qoldir — faqat raqamni muzlatish kerak bo'lsa to'ldiriladi"
+
+      - name: body
+        label: Matn
         widget: markdown

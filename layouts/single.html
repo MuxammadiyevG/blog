@@ -12,14 +12,14 @@
       {{- with .Params.tags }}
       <span class="cat">{{ delimit . " · " }}</span>
       {{- end }}
-      <span class="read">{{ .ReadingTime }} min</span>
+      <span class="read">{{ i18n "readingTime" (dict "Count" .ReadingTime) }}</span>
       <span class="date">{{ .Date.Format "2006-01-02" }}</span>
     </div>
     <h1>{{ .Title }}</h1>
     {{- with .Params.tags }}
     <div class="tags">
       {{- range . }}
-      <a href="{{ (printf "/tags/%s/" (urlize .)) | relURL }}">#{{ urlize . }}</a>
+      <a href="{{ (printf "/tags/%s/" (urlize .)) | relLangURL }}">#{{ urlize . }}</a>
       {{- end }}
     </div>
     {{- end }}

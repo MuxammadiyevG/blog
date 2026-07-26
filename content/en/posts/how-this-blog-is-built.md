@@ -2,6 +2,7 @@
 title: "How this blog is built"
 date: 2026-07-25T22:30:00+05:00
 tags: ["meta", "tooling"]
+translationKey: how-this-blog-is-built
 draft: false
 summary: "Hugo, a hand-written theme, and two ways to publish a post."
 ---

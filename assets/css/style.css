@@ -512,6 +512,47 @@ pre {
 .chroma .gs { font-weight: 700; }
 .chroma .ln, .chroma .lnt { color: var(--dim); user-select: none; }
 
+/* ---------- Diagrams ---------- */
+.diagram {
+  margin: 0 0 18px;
+  overflow-x: auto;
+}
+.diagram svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* GoAT emits stroke="currentColor" / fill="currentColor", so one colour drives it all
+   and the drawing follows the theme for free. */
+svg.goat {
+  color: var(--ink);
+  font-family: 'Plex Mono', ui-monospace, monospace;
+}
+
+.diagram-mermaid { text-align: center; }
+.mermaid {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  /* Hidden until mermaid replaces the source text with an SVG, so the reader never
+     sees raw diagram syntax flash on screen. */
+  visibility: hidden;
+}
+.mermaid[data-processed] { visibility: visible; }
+
+/* ---------- Language switch ---------- */
+.nav .lang-off {
+  color: var(--dim);
+  padding: 2px 6px;
+  cursor: not-allowed;
+}
+.nav .lang-off::before { content: "["; color: var(--faint); font-weight: 400; margin-right: 3px; }
+.nav .lang-off::after  { content: "]"; color: var(--faint); font-weight: 400; margin-left: 3px; }
+
 /* ---------- Tag list page ---------- */
 .terms { max-width: 620px; margin: 0 auto; font-size: 14px; }
 .terms li { margin: 0 0 6px; }

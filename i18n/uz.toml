@@ -1,0 +1,71 @@
+[info]
+other = "ma'lumot"
+
+[notes]
+other = "qaydlar"
+
+[releases]
+other = "chiqarilganlar"
+
+[posts]
+other = "postlar"
+
+[tags]
+other = "teglar"
+
+[home]
+other = "bosh"
+
+[theme]
+other = "tema"
+
+[allPosts]
+other = "hamma postlar"
+
+[allTags]
+other = "hamma teglar"
+
+[newer]
+other = "yangiroq"
+
+[older]
+other = "eskiroq"
+
+[readingTime]
+other = "{{ .Count }} daqiqa"
+
+[releaseCount]
+other = "{{ .Count }} ta chiqarilgan"
+
+[noReleases]
+other = "hali chiqarilgan yo'q."
+
+[nothingHere]
+other = "bu yerda hali hech narsa yo'q."
+
+[noTags]
+other = "hali teg yo'q."
+
+[noTranslation]
+other = "tarjima yo'q"
+
+[notFoundTitle]
+other = "bu chiqarilganda bunday fayl yo'q"
+
+[notFoundBody]
+other = "bunday manzil mavjud emas."
+
+[backHome]
+other = "bosh sahifaga"
+
+[fieldHandle]
+other = "Nom"
+
+[fieldFocus]
+other = "Yo'nalish"
+
+[fieldPosts]
+other = "Postlar"
+
+[fieldMirror]
+other = "Ko'zgu"

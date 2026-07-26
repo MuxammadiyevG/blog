@@ -1,6 +1,6 @@
 {{ define "header" }}
   <div class="subhead">#{{ .Title | urlize }}</div>
-  <div class="rel">{{ len .Pages }} release(s)</div>
+  <div class="rel">{{ i18n "releaseCount" (dict "Count" (len .Pages)) }}</div>
 {{ end }}
 
 {{ define "main" }}
@@ -12,5 +12,5 @@
     {{- end }}
   </div>
 
-  <div class="pager"><a href="{{ "/tags/" | relURL }}">[ all tags ]</a></div>
+  <div class="pager"><a href="{{ "/tags/" | relLangURL }}">[ {{ i18n "allTags" }} ]</a></div>
 {{ end }}

@@ -1,5 +1,5 @@
 {{ define "header" }}
-  <div class="subhead">{{ .Title | lower }}</div>
+  <div class="subhead">{{ i18n "posts" }}</div>
   <div class="rel">{{ site.Params.releaseName }}</div>
 {{ end }}
 
@@ -15,15 +15,15 @@
     {{- range $paginator.Pages }}
       {{ partial "post-card.html" . }}
     {{- else }}
-      <p style="text-align:center">nothing here yet.</p>
+      <p style="text-align:center">{{ i18n "nothingHere" }}</p>
     {{- end }}
   </div>
 
   {{- if gt $paginator.TotalPages 1 }}
   <div class="pager">
-    {{- with $paginator.Prev }}<a href="{{ .URL }}">[ newer ]</a>{{ end }}
+    {{- with $paginator.Prev }}<a href="{{ .URL }}">[ {{ i18n "newer" }} ]</a>{{ end }}
     <span>{{ $paginator.PageNumber }} / {{ $paginator.TotalPages }}</span>
-    {{- with $paginator.Next }}<a href="{{ .URL }}">[ older ]</a>{{ end }}
+    {{- with $paginator.Next }}<a href="{{ .URL }}">[ {{ i18n "older" }} ]</a>{{ end }}
   </div>
   {{- end }}
 {{ end }}

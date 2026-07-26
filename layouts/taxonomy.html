@@ -1,5 +1,5 @@
 {{ define "header" }}
-  <div class="subhead">tags</div>
+  <div class="subhead">{{ i18n "tags" }}</div>
   <div class="rel">{{ site.Params.releaseName }}</div>
 {{ end }}
 
@@ -11,7 +11,7 @@
     <li><a href="{{ .RelPermalink }}">#{{ .Title | urlize }}</a>
       <span class="count">&middot; {{ len .Pages }}</span></li>
     {{- else }}
-    <li>no tags yet.</li>
+    <li>{{ i18n "noTags" }}</li>
     {{- end }}
   </ul>
 {{ end }}

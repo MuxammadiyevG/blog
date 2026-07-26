@@ -48,6 +48,8 @@ Mirror .......... [ github.com/MuxammadiyevG ]
 
 ## 4. Arxitektura
 
+> Kontent yo'li 16.1-bo'limda o'zgargan: `content/en/posts/`, `content/uz/posts/`.
+
 ```
 GitHub repo (MuxammadiyevG/blog)
 ├── content/posts/*.md      yagona kontent manbai
@@ -75,6 +77,8 @@ Ikkala yo'l ham bir xil `.md` faylni yozadi. Alohida ma'lumotlar bazasi yo'q, si
 muammosi yo'q.
 
 ## 5. Kontent modeli
+
+> Frontmatter'ga `translationKey` qo'shilgan, 16.1-bo'limga qara.
 
 Frontmatter — qo'lda to'ldiriladigan maydonlar:
 
@@ -290,6 +294,8 @@ deploy oladi.
 
 ## 12. Doiradan tashqarida (YAGNI)
 
+> Ko'p tillilik bu ro'yxatdan chiqarildi, 16-bo'limga qara.
+
 Quyidagilar ataylab qilinmaydi:
 
 - Izohlar tizimi
@@ -357,3 +363,60 @@ avvalgisi kod fonida 4.30:1 berardi, WCAG AA 4.5:1 dan past.
 Ochiq qolgan yagona nuqta — CMS'ning uchidan uchiga sinovi. U GitHub OAuth App va
 Cloudflare Worker deploy qilinishini talab qiladi, ikkalasi ham foydalanuvchi
 akkauntlarida bajariladi.
+
+## 16. Kengaytma: ko'p tillilik va chizmalar (2026-07-26)
+
+12-bo'limda ko'p tillilik ataylab doiradan tashqarida deb yozilgan edi. Bu qaror
+o'zgartirildi.
+
+### 16.1 Til modeli
+
+Tanlangan model — **to'liq tarjima**: har post ikki tilda yozilishi mo'ljallangan.
+Muqobil model (har post bitta tilda, tarjimasiz) taklif qilingan va rad etilgan.
+
+Muhim yumshatuvchi tafsilot: Hugo tarjimani majburlamaydi. Tarjimasi yo'q post
+bemalol mavjud bo'la oladi — bunday postda til tugmasi faol emas, `title` atributida
+"tarjima yo'q" deb turadi. Ya'ni model maqsad sifatida to'liq tarjima, texnik jihatdan
+esa yarim tarjima qilingan sayt ham buzilmaydi.
+
+| Element | Qaror |
+|---|---|
+| Asosiy til | ingliz, prefikssiz (`/`) |
+| Ikkinchi til | o'zbek, `/uz/` ostida |
+| Kontent | `content/en/`, `content/uz/` (til bo'yicha `contentDir`) |
+| Bog'lash | `translationKey` frontmatter maydoni |
+| Interfeys | `i18n/en.toml`, `i18n/uz.toml` |
+| Tilga bog'liq sozlama | `[languages.<til>.params]` |
+
+`translationKey` fayl nomi bo'yicha bog'lashdan afzal ko'rildi: aks holda o'zbekcha
+slug inglizcha nomga majbur bo'lardi (`/uz/posts/cache-poisoning/`). Endi har til o'z
+tabiiy manzilini oladi.
+
+### 16.2 Release raqami tillar aro
+
+Release — maqola, tarjima emas. Shuning uchun raqam `translationKey` bo'yicha
+guruhlanadi va guruh eng erta sanasiga qarab tartiblanadi: inglizcha va o'zbekcha
+versiya bitta `#0004` raqamini bo'lishadi.
+
+Tenglik holati `translationKey` bilan hal qilinadi, shuning uchun tartib build'dan
+build'ga o'zgarmaydi.
+
+### 16.3 Chizmalar
+
+Ikki sintaksis, ikki xil narx:
+
+| | GoAT | Mermaid |
+|---|---|---|
+| Qayerda render bo'ladi | build paytida | brauzerda |
+| JavaScript | yo'q | 3.4 MB (0.9 MB gzip) |
+| Qachon yuklanadi | — | faqat `mermaid` bloki bor sahifada |
+| Layout | qo'lda | avtomatik |
+| Tema | `currentColor` orqali avtomatik | CSS o'zgaruvchilaridan o'qiladi |
+
+Shartli yuklash `.Page.Store` orqali: render hook bayroq qo'yadi, `baseof.html` `main`
+blokidan **keyin** uni tekshiradi. Chizmasiz postlar JavaScript'siz qoladi.
+
+Mermaid `securityLevel: 'strict'` bilan ishga tushadi — yorliq ichidagi HTML
+bajarilmaydi. Bu shu domenda CMS tokeni turgani uchun majburiy shart. Tema
+almashtirilganda chizmalar qayta chiziladi, chunki mermaid ranglarni SVG ichiga
+yozib qo'yadi.

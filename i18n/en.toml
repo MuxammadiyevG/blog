@@ -1,0 +1,71 @@
+[info]
+other = "info"
+
+[notes]
+other = "notes"
+
+[releases]
+other = "releases"
+
+[posts]
+other = "posts"
+
+[tags]
+other = "tags"
+
+[home]
+other = "home"
+
+[theme]
+other = "theme"
+
+[allPosts]
+other = "all posts"
+
+[allTags]
+other = "all tags"
+
+[newer]
+other = "newer"
+
+[older]
+other = "older"
+
+[readingTime]
+other = "{{ .Count }} min"
+
+[releaseCount]
+other = "{{ .Count }} release(s)"
+
+[noReleases]
+other = "no releases yet."
+
+[nothingHere]
+other = "nothing here yet."
+
+[noTags]
+other = "no tags yet."
+
+[noTranslation]
+other = "not translated"
+
+[notFoundTitle]
+other = "file not found in this release"
+
+[notFoundBody]
+other = "that path does not exist."
+
+[backHome]
+other = "back home"
+
+[fieldHandle]
+other = "Handle"
+
+[fieldFocus]
+other = "Focus"
+
+[fieldPosts]
+other = "Posts"
+
+[fieldMirror]
+other = "Mirror"

@@ -1,0 +1,6 @@
+{{- /* ```mermaid fenced blocks are rendered in the browser. The flag below is what makes
+       the 3.4 MB bundle load on this page only — pages without a diagram stay clean. */ -}}
+{{- .Page.Store.Set "hasMermaid" true -}}
+<figure class="diagram diagram-mermaid">
+  <pre class="mermaid">{{- .Inner | htmlEscape | safeHTML -}}</pre>
+</figure>
