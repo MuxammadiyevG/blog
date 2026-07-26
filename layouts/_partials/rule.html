@@ -1,0 +1,5 @@
+{{- with resources.Get "ascii/rule.txt" }}
+<pre class="rule" aria-hidden="true">{{ .Content }}</pre>
+{{- else }}
+<hr class="rule-plain">
+{{- end }}

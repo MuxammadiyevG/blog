@@ -1,0 +1,70 @@
+# Sveltia CMS — browser editor for content/posts/*.md
+#
+# base_url must point at your deployed sveltia-cms-auth Cloudflare Worker.
+# Nothing secret lives in this file: the OAuth client secret stays a Worker secret.
+
+backend:
+  name: github
+  repo: MuxammadiyevG/blog
+  branch: main
+  base_url: https://REPLACE-ME.workers.dev
+  auth_scope: public_repo
+
+media_folder: static/uploads
+public_folder: /uploads
+
+publish_mode: simple
+
+collections:
+  - name: posts
+    label: Posts
+    label_singular: Post
+    folder: content/posts
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: yaml-frontmatter
+    preview_path: posts/{{slug}}
+    sortable_fields: [date, title]
+    fields:
+      - name: title
+        label: Title
+        widget: string
+
+      - name: date
+        label: Date
+        widget: datetime
+        # Keep the offset — a bare date is read as midnight and a post written in
+        # the evening would sit in the future and stay hidden until the next day.
+        format: YYYY-MM-DDTHH:mm:ssZ
+        picker_utc: false
+
+      - name: tags
+        label: Tags
+        widget: list
+        required: false
+        default: []
+        hint: 'lowercase, e.g. bug bounty, writeup, recon'
+
+      - name: draft
+        label: Draft
+        widget: boolean
+        default: true
+        hint: 'on = not published; turn off to release'
+
+      - name: summary
+        label: Summary
+        widget: string
+        required: false
+        hint: 'one line for the post list; leave empty to use the opening text'
+
+      - name: id
+        label: Pinned release number
+        widget: number
+        required: false
+        value_type: int
+        hint: 'leave empty — only set this to freeze a number that must never move'
+
+      - name: body
+        label: Body
+        widget: markdown

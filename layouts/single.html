@@ -1,0 +1,38 @@
+{{ define "header" }}
+  <div class="subhead">{{ site.Title }}</div>
+  <div class="rel">{{ site.Params.releaseName }}</div>
+{{ end }}
+
+{{ define "main" }}
+<article class="article">
+
+  <header class="article-head">
+    <div class="phead">
+      <span class="id">{{ partial "post-id.html" . }}</span>
+      {{- with .Params.tags }}
+      <span class="cat">{{ delimit . " · " }}</span>
+      {{- end }}
+      <span class="read">{{ .ReadingTime }} min</span>
+      <span class="date">{{ .Date.Format "2006-01-02" }}</span>
+    </div>
+    <h1>{{ .Title }}</h1>
+    {{- with .Params.tags }}
+    <div class="tags">
+      {{- range . }}
+      <a href="{{ (printf "/tags/%s/" (urlize .)) | relURL }}">#{{ urlize . }}</a>
+      {{- end }}
+    </div>
+    {{- end }}
+  </header>
+
+  <div class="content">
+    {{ .Content }}
+  </div>
+
+</article>
+
+<nav class="post-nav">
+  <span>{{ with .PrevInSection }}<a href="{{ .RelPermalink }}">&larr; {{ .Title }}</a>{{ end }}</span>
+  <span>{{ with .NextInSection }}<a href="{{ .RelPermalink }}">{{ .Title }} &rarr;</a>{{ end }}</span>
+</nav>
+{{ end }}

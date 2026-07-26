@@ -1,0 +1,5 @@
+<footer class="footer">
+  {{ site.Params.handle }}
+  {{- with .OutputFormats.Get "rss" }} &middot; <a href="{{ .Permalink }}">rss</a>{{ end }}
+  {{- with site.Params.github }} &middot; <a href="https://github.com/{{ . }}" rel="noopener noreferrer">github</a>{{ end }}
+</footer>

@@ -1,0 +1,17 @@
+{{ define "header" }}
+  <div class="subhead">tags</div>
+  <div class="rel">{{ site.Params.releaseName }}</div>
+{{ end }}
+
+{{ define "main" }}
+  {{ partial "rule.html" . }}
+
+  <ul class="terms">
+    {{- range .Pages.ByTitle }}
+    <li><a href="{{ .RelPermalink }}">#{{ .Title | urlize }}</a>
+      <span class="count">&middot; {{ len .Pages }}</span></li>
+    {{- else }}
+    <li>no tags yet.</li>
+    {{- end }}
+  </ul>
+{{ end }}

@@ -1,0 +1,22 @@
+<article class="post">
+  <div class="phead">
+    <span class="id">{{ partial "post-id.html" . }}</span>
+    {{- with .Params.tags }}
+    <span class="cat">{{ delimit . " · " }}</span>
+    {{- end }}
+    <span class="read">{{ .ReadingTime }} min</span>
+    <span class="date">{{ .Date.Format "2006-01-02" }}</span>
+  </div>
+
+  <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+
+  <p>{{ or .Params.summary (.Summary | plainify) | truncate 240 }}</p>
+
+  {{- with .Params.tags }}
+  <div class="tags">
+    {{- range . }}
+    <a href="{{ (printf "/tags/%s/" (urlize .)) | relURL }}">#{{ urlize . }}</a>
+    {{- end }}
+  </div>
+  {{- end }}
+</article>

@@ -1,0 +1,29 @@
+{{ define "header" }}
+  <div class="subhead">{{ .Title | lower }}</div>
+  <div class="rel">{{ site.Params.releaseName }}</div>
+{{ end }}
+
+{{ define "main" }}
+  {{- with .Content }}
+  <div class="copy">{{ . }}</div>
+  {{- end }}
+
+  {{ partial "rule.html" . }}
+
+  {{- $paginator := .Paginate .RegularPagesRecursive }}
+  <div class="posts">
+    {{- range $paginator.Pages }}
+      {{ partial "post-card.html" . }}
+    {{- else }}
+      <p style="text-align:center">nothing here yet.</p>
+    {{- end }}
+  </div>
+
+  {{- if gt $paginator.TotalPages 1 }}
+  <div class="pager">
+    {{- with $paginator.Prev }}<a href="{{ .URL }}">[ newer ]</a>{{ end }}
+    <span>{{ $paginator.PageNumber }} / {{ $paginator.TotalPages }}</span>
+    {{- with $paginator.Next }}<a href="{{ .URL }}">[ older ]</a>{{ end }}
+  </div>
+  {{- end }}
+{{ end }}

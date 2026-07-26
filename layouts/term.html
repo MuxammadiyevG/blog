@@ -1,0 +1,16 @@
+{{ define "header" }}
+  <div class="subhead">#{{ .Title | urlize }}</div>
+  <div class="rel">{{ len .Pages }} release(s)</div>
+{{ end }}
+
+{{ define "main" }}
+  {{ partial "rule.html" . }}
+
+  <div class="posts">
+    {{- range .Pages }}
+      {{ partial "post-card.html" . }}
+    {{- end }}
+  </div>
+
+  <div class="pager"><a href="{{ "/tags/" | relURL }}">[ all tags ]</a></div>
+{{ end }}

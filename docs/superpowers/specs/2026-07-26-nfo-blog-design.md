@@ -2,7 +2,7 @@
 
 Sana: 2026-07-26
 Muallif: M1kr0
-Holat: tasdiqlangan, implementatsiya rejasi kutilmoqda
+Holat: amalga oshirilgan (14-bo'limdagi chetlanishlar bilan)
 
 ## 1. Maqsad
 
@@ -167,25 +167,21 @@ yozilmaydi — faqat `var(--ink)` ko'rinishida.
 
 ```css
 :root {                      /* yorug' — blueprint */
-  --bg:      #c3ccd6;   --sheet:   #f4f7fa;
-  --ink:     #0a1830;   --ink-2:   #22304a;
-  --muted:   #5a6b84;   --dim:     #8b9ab0;
-  --faint:   #b6c1d0;
-  --link:    #1a52c4;   --link-hi: #0b3fa8;
-  --code:    #b23200;   --tag:     #2f6d4a;
+  --bg: ...; --sheet: ...; --ink: ...; --ink-2: ...;
+  --muted: ...; --dim: ...; --link: ...; --code: ...; --tag: ...;
+  /* + kod uchun --syn-* to'plami */
 }
 :root[data-theme="dark"] {   /* qorong'i — amber CRT */
-  --bg:      #0d0b08;   --sheet:   #14110c;
-  --ink:     #ffb642;   --ink-2:   #e0a03a;
-  --muted:   #9c7a44;   --dim:     #6b5430;
-  --faint:   #3d3020;
-  --link:    #ff7a1a;   --link-hi: #ffa050;
-  --code:    #ff5c3a;   --tag:     #9ccf5a;
+  /* xuddi shu nomlar, boshqa qiymatlar */
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) { /* qorong'i qiymatlar takrorlanadi */ }
 }
 ```
+
+Aniq qiymatlar `assets/css/style.css` boshida — yagona manba shu. Bu yerda takrorlanmaydi,
+chunki bir nechta qiymat AA kontrastiga yetish uchun sozlangan va ikki nusxa bir-biridan
+uzoqlashib ketardi. O'zgartirganda `node docs/contrast-check.js` ni qayta ishga tush.
 
 Tartib: tizim sozlamasi odatiy holat. Foydalanuvchi tugmani bossa, tanlov `localStorage`
 ga yoziladi va tizim sozlamasini bosib o'tadi.
@@ -209,7 +205,7 @@ IBM Plex Mono. `woff2` fayllari `static/fonts/` da — Google Fonts CDN ishlatil
 Sabablar: tashqi so'rov yo'q, sahifa tezroq ochiladi, tashrif buyuruvchi IP manzili uchinchi
 tomonga ketmaydi.
 
-Og'irliklar: 450 (asosiy matn), 600 (info blok), 700 (sarlavhalar).
+Og'irliklar: 400 (asosiy matn), 600 (info blok), 700 (sarlavhalar).
 
 Ilhom manbaidan farq: u yerda butun matn `font-weight: 700`. NFO janriga mos, lekin 12
 daqiqalik writeup o'qishga og'ir. Bu yerda faqat sarlavha va info blok qalin qoladi.
@@ -305,7 +301,7 @@ Quyidagilar ataylab qilinmaydi:
 
 Bularning har biri keyin, real ehtiyoj paydo bo'lganda ko'rib chiqiladi.
 
-## 13. Muvaffaqiyat mezonlari
+## 13. Muvaffaqiyat mezonlari (avvalgi holat)
 
 1. `hugo new posts/x.md` → tahrir → `git push` — 30 soniya ichida saytda
 2. `/admin` orqali brauzerdan post yozib nashr qilish ishlaydi, terminal ochmasdan
@@ -315,3 +311,49 @@ Bularning har biri keyin, real ehtiyoj paydo bo'lganda ko'rib chiqiladi.
 6. Mobil'da sahifa gorizontal skroll bo'lmaydi
 7. Bosh sahifa tashqi so'rovsiz ochiladi (shrift ham o'z serverimizdan)
 8. Yangi post qo'shilganda ro'yxat, teg sahifalari, RSS va post soni avtomatik yangilanadi
+
+## 14. Implementatsiya chetlanishlari
+
+Quruvchi paytida spec'dan farq qilgan qarorlar va sabablari.
+
+**Shrift og'irligi 450 emas, 400.** IBM Plex Mono o'zgaruvchan (variable) shrift emas,
+faqat 100/200/.../700 statik og'irliklari bor. 450 mavjud emas, shuning uchun asosiy matn
+400 da. Ilhom manbaidan farq (u yerda hamma narsa 700) baribir saqlangan.
+
+**ASCII art ikki o'lchamli.** Spec'da hero art doim 2.2px deb yozilgan edi — bu faqat
+suratdan aylantirilgan katta art uchun to'g'ri. Qo'lda chizilgan banner bunday o'lchamda
+ko'rinmaydi. `heroArtScale` parametri qo'shildi: `block` (9px, hozirgi) va `image`
+(2.2px). Ajratgich chiziq ham 2.4px o'rniga 11px da.
+
+**Mobil'da hero art yashirilmaydi.** Spec 640px dan pastda artni yashirishni aytgan edi.
+Bu `image` rejimi uchun to'g'ri va shunday qolgan, lekin `block` banner telefonda ham
+o'qiladi — u 7px ga kichraytiriladi, yashirilmaydi.
+
+**`timeZone` sozlamasi qo'shildi.** Spec'da yo'q edi. Usiz Hugo yalang'och sanani UTC deb
+o'qiydi, natijada kechqurun yozilgan post kelajakdagi sanaga tushib qoladi va saytda
+umuman chiqmaydi. `hugo.toml` da `timeZone = "Asia/Tashkent"`. Bu quruvchi paytida real
+muammo bo'ldi: birinchi build'da hamma post yo'qoldi.
+
+**Sveltia CMS lokal saqlandi.** Odatiy o'rnatish skriptni CDN'dan yuklaydi. Bu skript
+brauzerda GitHub tokenini ushlaydi, ya'ni buzilgan CDN buzilgan repo demakdir. Bundle
+`static/admin/sveltia-cms.js` ga nusxalandi, versiya va sha256 `VERSION.txt` da.
+
+**Yorug' temada izoh rangi o'zgartirildi.** `--syn-com` `#5f7086` dan `#586880` ga —
+avvalgisi kod fonida 4.30:1 berardi, WCAG AA 4.5:1 dan past.
+
+## 15. Tekshiruv natijalari
+
+| Mezon | Holat | Dalil |
+|---|---|---|
+| Terminal orqali post | o'tdi | `hugo new` + build, post saytda chiqdi |
+| Brauzer orqali post | qisman | CMS va config joyida; OAuth Worker deploy qilinmagani uchun uchidan uchiga sinovdan o'tmagan |
+| Ikki yo'l bir manbaga yozadi | o'tdi | CMS `content/posts` ga sozlangan, format bir xil |
+| Tema miltillashi yo'q | o'tdi | tema skripti `<head>` ichida, CSS'dan oldin, sinxron |
+| WCAG AA kontrast | o'tdi | `docs/contrast-check.js` — 28 juftlik, 0 xato |
+| Mobil'da gorizontal skroll yo'q | o'tdi | 390/768/1280 px da `scrollWidth == clientWidth` |
+| Tashqi so'rovsiz ochiladi | o'tdi | build chiqishida tashqi domen havolasi yo'q |
+| Ro'yxat/teg/RSS avtomatik | o'tdi | 15 sahifa, teg sahifalari va RSS generatsiya qilindi |
+
+Ochiq qolgan yagona nuqta — CMS'ning uchidan uchiga sinovi. U GitHub OAuth App va
+Cloudflare Worker deploy qilinishini talab qiladi, ikkalasi ham foydalanuvchi
+akkauntlarida bajariladi.

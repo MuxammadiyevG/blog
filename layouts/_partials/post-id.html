@@ -1,0 +1,19 @@
+{{- /* Release number for a post.
+
+     Default: position in the date-ascending order of published posts, so the
+     oldest post is #0001. Deleting a post shifts every later number.
+
+     To pin a number permanently, set `id:` in the post front matter — it wins
+     over the computed value. */ -}}
+{{- $page := . -}}
+{{- $n := 0 -}}
+{{- with $page.Params.id -}}
+  {{- $n = . -}}
+{{- else -}}
+  {{- range $i, $p := (sort (where site.RegularPages "Section" "posts") "Date" "asc") -}}
+    {{- if eq $p.RelPermalink $page.RelPermalink -}}
+      {{- $n = add $i 1 -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- printf "#%04d" $n -}}

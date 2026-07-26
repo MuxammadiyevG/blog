@@ -1,0 +1,48 @@
+baseURL = "https://blog.pages.dev/"
+locale = "en-us"
+title = "M1kr0"
+# Bare front-matter dates (2026-07-26) are read in this zone. Without it Hugo reads
+# them as UTC, so a post written in the evening looks future-dated and stays hidden.
+timeZone = "Asia/Tashkent"
+enableRobotsTXT = true
+enableEmoji = false
+summaryLength = 40
+
+[params]
+  handle      = "M1kr0"
+  focus       = "Bug Bounty, Recon, Web"
+  github      = "MuxammadiyevG"
+  twitter     = "GMuxammadi46746"
+  releaseName = "m1kr0.blog.release.v2026.nfo"
+  # "block" = hand-drawn banner at readable size
+  # "image" = picture converted to text, drawn at 2.2px
+  heroArtScale = "block"
+  tagline     = "exploring and learning random things"
+  description = "Bug bounty writeups, recon methodology and tooling notes."
+
+[taxonomies]
+  tag = "tags"
+
+[permalinks]
+  posts = "/posts/:slug/"
+
+[markup]
+  [markup.highlight]
+    noClasses   = false
+    lineNos     = false
+    codeFences  = true
+    guessSyntax = true
+    tabWidth    = 4
+  [markup.goldmark.renderer]
+    unsafe = true
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel   = 3
+
+[outputs]
+  home    = ["HTML", "RSS"]
+  section = ["HTML", "RSS"]
+
+[services]
+  [services.rss]
+    limit = 20

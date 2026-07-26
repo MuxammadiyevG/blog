@@ -1,0 +1,4 @@
+{{- with resources.Get "ascii/hero.txt" }}
+{{- $scale := site.Params.heroArtScale | default "block" }}
+<pre class="hero-art hero-art--{{ $scale }}" aria-hidden="true">{{ .Content }}</pre>
+{{- end }}
