@@ -4,7 +4,7 @@ date: 2026-08-14T11:00:00+05:00
 tags: ["http-desync", "request-smuggling", "writeup", "cve"]
 slug: "tinyproxy-transfer-encoding-desync"
 translationKey: tinyproxy-desync
-draft: true
+draft: false
 summary: "Tinyproxy compares Transfer-Encoding with strcmp(), so `Chunked` slips past it while the backend honours it — a case-sensitivity bug that becomes request desync."
 ---
 

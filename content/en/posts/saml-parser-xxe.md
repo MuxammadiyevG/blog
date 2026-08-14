@@ -4,7 +4,7 @@ date: 2026-08-14T10:30:00+05:00
 tags: ["xxe", "saml", "methodology"]
 slug: "saml-parser-xxe"
 translationKey: saml-parser-xxe
-draft: true
+draft: false
 summary: "Why SAML token validators are a soft spot for XXE, how the libxml2 defaults betray them, and how I look for it — from first principles."
 ---
 

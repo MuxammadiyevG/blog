@@ -4,7 +4,7 @@ date: 2026-08-14T11:00:00+05:00
 tags: ["http-desync", "request-smuggling", "writeup", "cve"]
 slug: "tinyproxy-transfer-encoding-desync"
 translationKey: tinyproxy-desync
-draft: true
+draft: false
 summary: "Tinyproxy Transfer-Encoding'ni strcmp() bilan solishtiradi, shuning uchun `Chunked` undan o'tib ketadi, backend esa uni tan oladi — katta-kichik harf xatosi request desinxronizatsiyasiga aylanadi."
 ---
 

@@ -4,7 +4,7 @@ date: 2026-08-14T10:30:00+05:00
 tags: ["xxe", "saml", "methodology"]
 slug: "saml-parser-xxe"
 translationKey: saml-parser-xxe
-draft: true
+draft: false
 summary: "Nega SAML token validatorlari XXE uchun zaif nuqta, libxml2 sozlamalari ularni qanday sotib qo'yadi, va men buni qanday qidiraman — asosdan boshlab."
 ---
 
