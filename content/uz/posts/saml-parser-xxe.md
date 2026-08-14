@@ -19,7 +19,7 @@ autentifikatsiya qiladigan agent — izlaydigan shakling shu.
 
 ## Avval, XXE nima o'zi
 
-XML **entity** deb ataladigan qisqartmalar aniqlashga imkon beradi. Ichki qurilganlarini
+XML **entity** deb ataladigan qisqartmalar belgilashga imkon beradi. Ichki qurilganlarini
 ko'rgansan: `&lt;` bu `<` ga, `&amp;` bu `&` ga aylanadi. O'zingnikini ham e'lon qilsang
 bo'ladi:
 
@@ -250,7 +250,7 @@ doc = xmlReadMemory(token, len, NULL, NULL,
 
 Undan ham yaxshisi: SAML validatorining tashqi DTD yuklashga umuman ishi yo'q. Entity
 ochilishini butunlay o'chir (`xmlSubstituteEntitiesDefault(0)`, `xmlLoadExtDtdDefaultValue = 0`)
-va tarmoq o'chiq holda parse qil. Chuqurlikdagi himoya, va hech narsa yo'qotmaysan — haqiqiy
+va tarmoq o'chiq holda parse qil. Qatlamli himoya, va hech narsa yo'qotmaysan — haqiqiy
 SAML tokenlariga tashqi DTD kerak emas. Va qanaqadir "imzoni o'tkazib yubor" yo'li bo'lsa, u
 chaqiruvchining haqiqatan imtiyozli ekaniga bog'lansin, chaqiruvchi o'zi o'rnatadigan flagga
 emas.
