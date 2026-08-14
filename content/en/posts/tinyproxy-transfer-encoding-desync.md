@@ -116,6 +116,8 @@ starvation, no crash required.
 
 ## Proof of concept
 
+**[Watch the PoC video](https://drive.google.com/file/d/14jDqzQhiIRUoYyca22zx9gANj3JwDEC2/view)** — the full run, proxy and backend side by side.
+
 Two servers: a backend that speaks HTTP/1.1 chunked, and Tinyproxy in front of it.
 
 **Backend** — a minimal Node server that prints when a request completes, so you can watch it
@@ -196,3 +198,4 @@ is never cosmetic — it's the raw material of request smuggling.
 - **Fix:** `strcasecmp()` in place of `strcmp()`
 - **CVE:** CVE-2026-31842
 - **PoC:** <https://github.com/MuxammadiyevG/Vulns_POC/tree/main/CVE-2026-31842>
+- **Video:** <https://drive.google.com/file/d/14jDqzQhiIRUoYyca22zx9gANj3JwDEC2/view>

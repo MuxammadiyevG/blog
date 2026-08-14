@@ -116,6 +116,8 @@ backend'ning ishchilar hovuzini tugatasan, va qonuniy so'rovlarga joy qolmaydi �
 
 ## Proof of concept
 
+**[PoC videosini ko'r](https://drive.google.com/file/d/14jDqzQhiIRUoYyca22zx9gANj3JwDEC2/view)** — to'liq jarayon, proxy va backend yonma-yon.
+
 Ikki server: HTTP/1.1 chunked gapiradigan backend, va uning oldida Tinyproxy.
 
 **Backend** — so'rov tugaganda buni chop etadigan minimal Node server, shunda uning
@@ -198,3 +200,4 @@ smuggling'ning xom ashyosi.
 - **Tuzatish:** `strcmp()` o'rniga `strcasecmp()`
 - **CVE:** CVE-2026-31842
 - **PoC:** <https://github.com/MuxammadiyevG/Vulns_POC/tree/main/CVE-2026-31842>
+- **Video:** <https://drive.google.com/file/d/14jDqzQhiIRUoYyca22zx9gANj3JwDEC2/view>
