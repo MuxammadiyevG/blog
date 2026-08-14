@@ -15,7 +15,7 @@
     {{- range $paginator.Pages }}
       {{ partial "post-card.html" . }}
     {{- else }}
-      <p style="text-align:center">{{ i18n "nothingHere" }}</p>
+      <p class="center">{{ i18n "nothingHere" }}</p>
     {{- end }}
   </div>
 

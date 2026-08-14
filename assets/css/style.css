@@ -512,6 +512,14 @@ pre {
 .chroma .gs { font-weight: 700; }
 .chroma .ln, .chroma .lnt { color: var(--dim); user-select: none; }
 
+/* ---------- Utilities ----------
+   These exist so no template needs a style="" attribute: the Content-Security-Policy
+   sets style-src 'self', which blocks inline style attributes. */
+.center { text-align: center; }
+.ta-left   { text-align: left; }
+.ta-center { text-align: center; }
+.ta-right  { text-align: right; }
+
 /* ---------- Diagrams ---------- */
 .diagram {
   margin: 0 0 18px;

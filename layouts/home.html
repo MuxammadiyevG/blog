@@ -14,7 +14,7 @@
 {{ define "main" }}
   {{- with site.Params.tagline }}
   <div class="stitle small">{{ i18n "notes" }}</div>
-  <div class="copy"><p style="text-align:center">{{ . }}</p></div>
+  <div class="copy"><p class="center">{{ . }}</p></div>
   {{- end }}
 
   {{ partial "rule.html" . }}
@@ -26,7 +26,7 @@
     {{- range first 10 $posts }}
       {{ partial "post-card.html" . }}
     {{- else }}
-      <p style="text-align:center">{{ i18n "noReleases" }}</p>
+      <p class="center">{{ i18n "noReleases" }}</p>
     {{- end }}
   </div>
 

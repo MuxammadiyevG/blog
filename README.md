@@ -157,6 +157,35 @@ Tashqi so'rov bo'lmasligi uchun hamma narsa repo ichida. Versiya va sha256 —
 | `static/fonts/plex-mono-*.woff2` | IBM Plex Mono, OFL |
 | `assets/js/mermaid.min.js` | mermaid 11.16.0, faqat chizmali sahifada yuklanadi |
 
+## Xavfsizlik sarlavhalari
+
+`static/_headers` Cloudflare Pages tomonidan o'qiladi va har javobga CSP hamda bir nechta
+qattiqlashtiruvchi sarlavha qo'shadi.
+
+| Direktiva | Qiymat | Nega |
+|---|---|---|
+| `script-src` | `'self'` | Inline skript umuman yo'q, `unsafe-eval` ham yo'q — inyeksiya qilingan payload bajarilmaydi |
+| `style-src` | `'self' 'unsafe-inline'` | Mermaid va GoAT SVG ichiga inline uslub yozadi, buni o'zgartirib bo'lmaydi |
+| `default-src` | `'none'` | Qolgan hammasi taqiqlangan |
+| `frame-ancestors` | `'none'` | Clickjacking |
+| `form-action` | `'none'` | Saytda forma yo'q |
+
+O'lchangan natija: oddiy sahifalarda 0 buzilish, chizmali sahifada ham 0 — va chizmali
+sahifada `script-src` buzilishi hech qachon bo'lmagan, faqat `style-src` edi.
+
+Skriptlar tashqi fayl bo'lgani uchun har biriga Hugo `integrity` (SRI) hash qo'yadi.
+
+### Postda xom HTML ishlamaydi
+
+`hugo.toml` da `markup.goldmark.renderer.unsafe = false`. Ya'ni markdown ichiga yozilgan
+`<script>` yoki `<img onerror=...>` bajarilmaydi — matn sifatida ko'rinadi.
+
+Bu ataylab: writeup yozganda payload nusxalaysan, ulardan biri kod bloki tashqarisida
+qolib ketsa o'z domeningda ishga tushardi. Kod bloki (```` ``` ````) ichidagi hamma narsa
+avvalgidek xavfsiz ko'rsatiladi.
+
+Agar postda haqiqatan HTML kerak bo'lsa — shortcode yozamiz, u nazorat ostida bo'ladi.
+
 ## Writeup chiqarishdan oldin
 
 Program'ning disclosure siyosatini tekshir. Ko'p program yozma ruxsatsiz nashrni

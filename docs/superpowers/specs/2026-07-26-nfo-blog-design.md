@@ -464,3 +464,48 @@ markdown fayl  →  git push  →  Cloudflare Pages webhook  →  hugo --minify 
 ```
 
 Keyin kerak bo'lsa qaytarish qiyin emas — 17.2 dagi birinchi variant eng arzon yo'l.
+
+
+## 18. Xavfsizlik qattiqlashtirish (2026-07-27)
+
+17-bo'limda redaktor olib tashlangach ikkita band ochiq qolgan edi. Ikkalasi ham yopildi.
+
+### 18.1 Xom HTML o'chirildi
+
+`markup.goldmark.renderer.unsafe`: `true` → `false`.
+
+Boshlang'ich qurishda `true` qo'yilgan edi — markdown moslashuvchan bo'lsin degan niyatda.
+Bug bounty blogi uchun bu noto'g'ri sozlama: postlar payload bilan to'la bo'ladi va kod
+bloki tashqarisida qolgan bitta xom HTML o'z domenida bajarilardi.
+
+### 18.2 CSP va sarlavhalar
+
+`static/_headers` qo'shildi. Buning uchun barcha inline skriptlar tashqi faylga
+ko'chirildi (`assets/js/theme-init.js`, `theme-toggle.js`, `mermaid-init.js`) va
+shablonlardagi `style=""` atributlari CSS klasslariga almashtirildi.
+
+Natijada `script-src 'self'` — na `'unsafe-inline'`, na `'unsafe-eval'`. Har skript SRI
+hash bilan yuklanadi.
+
+`style-src` da `'unsafe-inline'` qoldi. Sabab o'lchangan: chizmali sahifada 187 ta
+`style-src-attr` va 6 ta `style-src-elem` buzilishi, hammasi mermaid SVG'si va GoAT'ning
+`style="font-size:1em"` atributlaridan. Bu generatsiya qilingan kod, o'zgartirib
+bo'lmaydi.
+
+Qabul qilingan ayirboshlash: skript uchun qat'iy siyosat (XSS bajarilishini to'sadi),
+uslub uchun bo'sh siyosat (CSS inyeksiyasi orqali ma'lumot chiqarishga yo'l qoladi, lekin
+buning uchun avval inyeksiya nuqtasi kerak, skript esa baribir ishlamaydi).
+
+Mermaid'dan voz kechilsa `style-src` ham `'self'` ga qaytariladi.
+
+### 18.3 Tekshiruv
+
+Brauzerda `securitypolicyviolation` hodisasini tinglab o'lchandi, CSP haqiqiy sarlavha
+sifatida berilgan holda:
+
+| Sahifa | Buzilish |
+|---|---|
+| Bosh sahifa (en) | 0 |
+| Bosh sahifa (uz) | 0 |
+| Formatlash namunasi | 0 |
+| Chizmalar sahifasi | 0 |

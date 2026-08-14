@@ -1,0 +1,30 @@
+# Cloudflare Pages reads this file from the build output root.
+#
+# The policy is deliberately tight: this site loads nothing from anywhere else, and it
+# has no forms, no analytics, no embeds. Every script is a same-origin file emitted by
+# Hugo with a Subresource Integrity hash — there are no inline scripts at all, so
+# script-src stays at 'self' with no 'unsafe-inline' and no 'unsafe-eval'. That is the
+# directive that stops an injected payload from executing.
+#
+# style-src carries 'unsafe-inline' for one reason: diagrams. Mermaid writes <style>
+# blocks and style attributes into the SVG it generates, and Hugo's GoAT renderer puts
+# style="font-size:1em" on every <text> element. Measured on the diagram page: 187
+# style-src-attr and 6 style-src-elem violations, and zero script-src violations.
+# Dropping mermaid would let style-src go back to 'self'.
+
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/css/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/js/*
+  Cache-Control: public, max-age=31536000, immutable
