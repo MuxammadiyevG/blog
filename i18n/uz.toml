@@ -69,3 +69,6 @@ other = "Postlar"
 
 [fieldMirror]
 other = "Ko'zgu"
+
+[themeAuto]
+other = "avtomatik"

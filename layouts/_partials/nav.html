@@ -30,5 +30,17 @@
     {{- end }}
   {{- end }}
 
-  <button class="theme-toggle" type="button" aria-label="Toggle colour theme">{{ i18n "theme" }}</button>
+  {{- /* <details> opens without JavaScript; the script only records the choice. */}}
+  <details class="theme-menu">
+    <summary>{{ i18n "theme" }}</summary>
+    <div class="theme-list">
+      <button type="button" data-theme-set="auto">{{ i18n "themeAuto" }}</button>
+      <button type="button" data-theme-set="blueprint">blueprint</button>
+      <button type="button" data-theme-set="amber">amber</button>
+      <button type="button" data-theme-set="neon">neon</button>
+      <button type="button" data-theme-set="phosphor">phosphor</button>
+      <button type="button" data-theme-set="paper">paper</button>
+      <button type="button" data-theme-set="mono">mono</button>
+    </div>
+  </details>
 </nav>

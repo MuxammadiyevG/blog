@@ -509,3 +509,61 @@ sifatida berilgan holda:
 | Bosh sahifa (uz) | 0 |
 | Formatlash namunasi | 0 |
 | Chizmalar sahifasi | 0 |
+
+
+## 19. Ko'p temali rejim (2026-07-27)
+
+Ikki tema (yorug'/qorong'i almashtirgich) oltitaga kengaytirildi.
+
+| Tema | Turi | Tavsif |
+|---|---|---|
+| `blueprint` | yorug' | ko'k siyoh, oq qog'oz — avvalgi yorug' tema |
+| `amber` | qorong'i | amber CRT — avvalgi qorong'i tema |
+| `neon` | qorong'i | siyon va ko'k, qora-ko'k fon |
+| `phosphor` | qorong'i | klassik yashil terminal |
+| `paper` | yorug' | issiq sepia, jigarrang siyoh |
+| `mono` | qorong'i | rangsiz, faqat och-to'qlik |
+
+### 19.1 Tanlov mantiqi
+
+```
+:root                          blueprint (yorug' odatiy)
+@media dark + [data-theme] yo'q   amber
+:root[data-theme="X"]          aniq tanlov, doim g'olib
+```
+
+`auto` tanlansa `data-theme` atributi olib tashlanadi va `localStorage` tozalanadi —
+sayt tizim sozlamasiga qaytadi.
+
+### 19.2 Interfeys
+
+Tugma o'rniga `<details>` menyusi. Sababi: oltita tema o'rtasida bitta tugma bilan
+aylanib yurish noqulay. `<details>` JavaScriptsiz ochiladi, ya'ni skript yuklanmasa ham
+ro'yxat ko'rinadi; skript faqat tanlovni yozadi va faol elementni belgilaydi.
+
+### 19.3 Eski qiymatlarni ko'chirish
+
+Avvalgi versiyada `data-theme` qiymatlari `light` va `dark` edi. `theme-init.js` ularni
+`blueprint` va `amber` ga ko'chiradi va `localStorage` ni yangilaydi, shuning uchun eski
+tanlov yo'qolmaydi.
+
+### 19.4 Kontrast tekshiruvi qayta yozildi
+
+`docs/contrast-check.js` endi palitralarni qo'lda takrorlamaydi — `assets/css/style.css`
+faylini o'qib, `:root` va har `[data-theme]` blokidan o'zgaruvchilarni chiqarib oladi.
+Shuning uchun skript va sayt bir-biridan uzoqlashib keta olmaydi.
+
+Natija: **6 tema × 19 juftlik = 114 tekshiruv, 0 xato.** Ikkita tema qurish paytida
+yiqilgan edi (`neon` va `mono` ning ajratgich chizig'i juda so'nik), tuzatildi.
+
+### 19.5 Tekshiruv
+
+| Nima | Natija |
+|---|---|
+| Oltala tema render bo'ladi | ha, skrinshot bilan |
+| Menyu ochiladi, faol tema belgilanadi | ha |
+| Tanlash: atribut + localStorage | `neon=neon stored=neon` |
+| `auto`: atribut o'chadi, xotira tozalanadi | `auto=(none) storedAuto=null` |
+| Keyingi yuklashda saqlanadi | `data-theme="paper"` |
+| Eski `dark` qiymati ko'chadi | `data-theme="amber"` |
+| CSP buzilishi | 0 (uch sahifada) |

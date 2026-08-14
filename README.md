@@ -205,19 +205,39 @@ Ikki o'lcham rejimi, `hugo.toml` dagi `heroArtScale` bilan tanlanadi:
 
 Surat-artga o'tsang `heroArtScale = "image"` qil.
 
-### Ranglar
+### Ranglar va temalar
 
-Hammasi `assets/css/style.css` boshidagi CSS o'zgaruvchilarida. Uch joyda: `:root`
-(yorug'), `:root[data-theme="dark"]`, va `@media (prefers-color-scheme: dark)` bloki.
-Qorong'i qiymatlarni o'zgartirsang — oxirgi ikkalasini ham yangila.
+Oltita tema: `blueprint` (yorug', ko'k), `amber` (qorong'i, sariq), `neon` (qorong'i,
+siyon), `phosphor` (qorong'i, yashil), `paper` (yorug', sepia), `mono` (qorong'i,
+rangsiz). Ustiga `auto` — tizim sozlamasiga ergashadi.
 
-Kontrastni tekshirish uchun `docs/contrast-check.js` bor:
+Hammasi `assets/css/style.css` boshida, har biri bir xil o'zgaruvchi nomlarini
+belgilaydi:
+
+```css
+:root, :root[data-theme="blueprint"] { ... }   /* yorug' odatiy */
+:root[data-theme="amber"] { ... }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { ... }              /* tanlanmagan bo'lsa: amber */
+}
+:root[data-theme="neon"] { ... }
+```
+
+Yangi tema qo'shish: shu ro'yxatga bitta blok, `layouts/_partials/nav.html` dagi
+menyuga bitta tugma, `assets/js/theme-init.js` dagi `THEMES` massiviga nom.
+
+Keyin kontrastni tekshir:
 
 ```bash
 node docs/contrast-check.js
 ```
 
-Hamma juftlik WCAG AA (4.5:1) dan o'tishi kerak; bezak elementlari uchun 3:1.
+Skript qiymatlarni CSS faylning o'zidan o'qiydi, ya'ni ro'yxat hech qachon koddan
+uzoqlashib ketmaydi. Har tema uchun 19 juftlik: asosiy matn, havola, teg, va kod
+ranglari. Asosiy matn uchun chegara WCAG AA (4.5:1), bezak elementlari uchun pastroq.
+
+Tanlov `localStorage` da `theme` kaliti ostida saqlanadi. Eski ikki temali versiyadan
+qolgan `light` / `blueprint` va `dark` / `amber` qiymatlari avtomatik ko'chiriladi.
 
 ### Info bloki
 

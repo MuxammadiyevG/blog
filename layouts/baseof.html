@@ -24,8 +24,8 @@
 
 </div>
 
-{{- $toggle := resources.Get "js/theme-toggle.js" | minify | fingerprint }}
-<script src="{{ $toggle.RelPermalink }}" integrity="{{ $toggle.Data.Integrity }}"></script>
+{{- $themeMenu := resources.Get "js/theme-menu.js" | minify | fingerprint }}
+<script src="{{ $themeMenu.RelPermalink }}" integrity="{{ $themeMenu.Data.Integrity }}"></script>
 
 {{- /* Loaded only on pages that actually contain a ```mermaid block. The flag is set by
        layouts/_markup/render-codeblock-mermaid.html while .Content renders above. */ -}}

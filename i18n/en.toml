@@ -69,3 +69,6 @@ other = "Posts"
 
 [fieldMirror]
 other = "Mirror"
+
+[themeAuto]
+other = "auto"

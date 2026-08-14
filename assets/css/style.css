@@ -64,9 +64,19 @@
                  U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
                  U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
+/* ---------- Palette ----------
+   Six named themes. Every one defines the same variable names, so the rest of the
+   stylesheet never mentions a colour directly.
 
-/* ---------- Palette ---------- */
-:root {
+   :root                    blueprint, the light default
+   @media dark, unset       amber, for a dark system with no explicit choice
+   :root[data-theme="…"]    an explicit choice, which always wins
+
+   Contrast for every theme is checked by docs/contrast-check.js, which reads the
+   values straight out of this file. Run it after touching anything here.          */
+
+:root,
+:root[data-theme="blueprint"] {
   --bg:       #c3ccd6;
   --sheet:    #f4f7fa;
   --ink:      #0a1830;
@@ -99,7 +109,8 @@
   --syn-add-bg:  rgba(39,96,68,.10);
 }
 
-:root[data-theme="dark"] {
+/* amber CRT — the dark default */
+:root[data-theme="amber"] {
   --bg:       #0d0b08;
   --sheet:    #14110c;
   --ink:      #ffb642;
@@ -132,7 +143,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme]) {
     --bg:       #0d0b08;
     --sheet:    #14110c;
     --ink:      #ffb642;
@@ -163,6 +174,139 @@
     --syn-del-bg:  rgba(255,122,104,.10);
     --syn-add-bg:  rgba(168,207,106,.10);
   }
+}
+
+/* neon — cyan and blue on near-black */
+:root[data-theme="neon"] {
+  --bg:       #05070d;
+  --sheet:    #0a0f1a;
+  --ink:      #5ce1ff;
+  --ink-2:    #49c4e0;
+  --muted:    #8fa9c2;
+  --dim:      #6b83a0;
+  --faint:    #253449;
+  --link:     #8fadff;
+  --link-hi:  #b8ccff;
+  --code:     #ff8ac4;
+  --tag:      #c39cff;
+  --rule:     #35496a;
+
+  --code-bg:      #060a12;
+  --code-border:  #1e2c40;
+  --sheet-shadow: 0 0 0 1px rgba(92,225,255,.08), 0 8px 32px rgba(0,0,0,.6);
+
+  --syn-key:     #c39cff;
+  --syn-str:     #7ce8c0;
+  --syn-com:     #7d93ad;
+  --syn-num:     #f5d76e;
+  --syn-fn:      #5ce1ff;
+  --syn-tag:     #8fadff;
+  --syn-op:      #49c4e0;
+  --syn-builtin: #ff8ac4;
+  --syn-del:     #ff7a90;
+  --syn-add:     #7ce8c0;
+  --syn-del-bg:  rgba(255,122,144,.10);
+  --syn-add-bg:  rgba(124,232,192,.10);
+}
+
+/* phosphor — classic green terminal */
+:root[data-theme="phosphor"] {
+  --bg:       #050805;
+  --sheet:    #0a0f0a;
+  --ink:      #4ae371;
+  --ink-2:    #3cc45f;
+  --muted:    #8bb897;
+  --dim:      #67916f;
+  --faint:    #1e3325;
+  --link:     #8affb0;
+  --link-hi:  #bcffd4;
+  --code:     #ff9a6c;
+  --tag:      #d4e85a;
+  --rule:     #2a4a33;
+
+  --code-bg:      #060a06;
+  --code-border:  #1c3322;
+  --sheet-shadow: 0 0 0 1px rgba(74,227,113,.07), 0 8px 32px rgba(0,0,0,.6);
+
+  --syn-key:     #bcffd4;
+  --syn-str:     #d4e85a;
+  --syn-com:     #7ba689;
+  --syn-num:     #ffd479;
+  --syn-fn:      #4ae371;
+  --syn-tag:     #8affb0;
+  --syn-op:      #3cc45f;
+  --syn-builtin: #ff9a6c;
+  --syn-del:     #ff8a7a;
+  --syn-add:     #d4e85a;
+  --syn-del-bg:  rgba(255,138,122,.10);
+  --syn-add-bg:  rgba(212,232,90,.10);
+}
+
+/* paper — warm sepia, the gentle light option */
+:root[data-theme="paper"] {
+  --bg:       #d6cdba;
+  --sheet:    #f7f1e3;
+  --ink:      #2b2016;
+  --ink-2:    #453425;
+  --muted:    #63513c;
+  --dim:      #8a7761;
+  --faint:    #cfc3ae;
+  --link:     #8a4b1f;
+  --link-hi:  #6b3714;
+  --code:     #a03a1f;
+  --tag:      #47632c;
+  --rule:     #b8a98f;
+
+  --code-bg:      #eee5d2;
+  --code-border:  #d6c9b0;
+  --sheet-shadow: 0 1px 2px rgba(43,32,22,.10), 0 4px 12px rgba(43,32,22,.08),
+                  0 16px 40px rgba(43,32,22,.09);
+
+  --syn-key:     #7a2f88;
+  --syn-str:     #47632c;
+  --syn-com:     #6a5947;
+  --syn-num:     #a03a1f;
+  --syn-fn:      #8a4b1f;
+  --syn-tag:     #1f5f57;
+  --syn-op:      #453425;
+  --syn-builtin: #7a4410;
+  --syn-del:     #a03a1f;
+  --syn-add:     #47632c;
+  --syn-del-bg:  rgba(160,58,31,.09);
+  --syn-add-bg:  rgba(71,99,44,.10);
+}
+
+/* mono — no hue at all, only weight and lightness */
+:root[data-theme="mono"] {
+  --bg:       #0b0b0b;
+  --sheet:    #131313;
+  --ink:      #e8e8e8;
+  --ink-2:    #c4c4c4;
+  --muted:    #a0a0a0;
+  --dim:      #7c7c7c;
+  --faint:    #333333;
+  --link:     #ffffff;
+  --link-hi:  #cfcfcf;
+  --code:     #cccccc;
+  --tag:      #ababab;
+  --rule:     #454545;
+
+  --code-bg:      #0a0a0a;
+  --code-border:  #2c2c2c;
+  --sheet-shadow: 0 0 0 1px rgba(232,232,232,.06), 0 8px 32px rgba(0,0,0,.6);
+
+  --syn-key:     #ffffff;
+  --syn-str:     #c0c0c0;
+  --syn-com:     #909090;
+  --syn-num:     #dcdcdc;
+  --syn-fn:      #eaeaea;
+  --syn-tag:     #cacaca;
+  --syn-op:      #b0b0b0;
+  --syn-builtin: #f0f0f0;
+  --syn-del:     #bdbdbd;
+  --syn-add:     #e0e0e0;
+  --syn-del-bg:  rgba(255,255,255,.05);
+  --syn-add-bg:  rgba(255,255,255,.08);
 }
 
 /* ---------- Base ---------- */
@@ -304,25 +448,66 @@ pre {
   font-size: 13px;
   margin: 18px 0 4px;
 }
-.nav a, .theme-toggle {
+.nav a, .theme-menu summary {
   color: var(--ink);
   text-decoration: none;
   font-weight: 600;
   padding: 2px 6px;
 }
-.nav a::before, .theme-toggle::before { content: "["; color: var(--dim); font-weight: 400; margin-right: 3px; }
-.nav a::after,  .theme-toggle::after  { content: "]"; color: var(--dim); font-weight: 400; margin-left: 3px; }
+.nav a::before, .theme-menu summary::before { content: "["; color: var(--dim); font-weight: 400; margin-right: 3px; }
+.nav a::after,  .theme-menu summary::after  { content: "]"; color: var(--dim); font-weight: 400; margin-left: 3px; }
 .nav a:hover, .nav a.active { text-decoration: underline; }
 
-.theme-toggle {
-  font-family: inherit;
+/* ---------- Theme menu ----------
+   <details> opens on its own, so the list works even before the script loads. */
+.theme-menu {
+  position: relative;
+  margin-left: 10px;
   font-size: 13px;
+}
+.theme-menu summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-block;
+}
+.theme-menu summary::-webkit-details-marker { display: none; }
+.theme-menu summary:hover { text-decoration: underline; }
+.theme-menu[open] summary { text-decoration: underline; }
+
+.theme-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  min-width: max-content;
+  padding: 4px 0;
+  background: var(--sheet);
+  border: 1px solid var(--code-border);
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  text-align: left;
+}
+.theme-list button {
+  display: block;
+  width: 100%;
+  padding: 3px 14px 3px 22px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--ink);
   background: none;
   border: 0;
+  text-align: left;
   cursor: pointer;
-  margin-left: 10px;
+  white-space: nowrap;
+  position: relative;
 }
-.theme-toggle:hover { text-decoration: underline; }
+.theme-list button:hover { background: var(--code-bg); }
+.theme-list button[aria-current="true"]::before {
+  content: "\203A";
+  position: absolute;
+  left: 9px;
+  color: var(--link);
+}
 
 /* ---------- Copy block ---------- */
 .copy {
@@ -628,7 +813,8 @@ svg.goat {
   .fields .b { text-align: right; white-space: normal; word-break: break-word; }
 
   .nav { gap: 2px 0; }
-  .theme-toggle { margin-left: 4px; }
+  .theme-menu { margin-left: 4px; }
+  .theme-list { left: auto; right: 0; transform: none; }
 
   .post .phead .date { margin-left: 0; }
   .post h3 { font-size: 15px; }
