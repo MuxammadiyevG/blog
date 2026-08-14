@@ -111,17 +111,19 @@ Mermaid bundle'i (3.4 MB) `assets/js/mermaid.min.js` da lokal saqlanadi va **faq
 
 To'liq namuna: `content/en/posts/diagram-reference.md` (doimiy qoralama).
 
-## Deploy — Cloudflare Pages
+## Deploy — Cloudflare Workers (static assets)
 
 1. Repo'ni GitHub'ga push qil (`MuxammadiyevG/blog`)
-2. Cloudflare dashboard → Workers & Pages → Create → Pages → Connect to Git
+2. Cloudflare dashboard → Workers & Pages → Create → Connect to Git
 3. Sozlamalar:
 
    | Maydon | Qiymat |
    |---|---|
    | Build command | `hugo --minify` |
-   | Build output directory | `public` |
+   | Deploy command | `npx wrangler deploy` |
    | Environment variable | `HUGO_VERSION` = `0.164.0` |
+
+   Deploy nimani yuborishini `wrangler.jsonc` belgilaydi: `assets.directory = ./public`.
 
 4. Deploy tugagach `hugo.toml` dagi `baseURL` ni haqiqiy manzilga o'zgartir va push qil.
    Bu muhim — RSS va OG teglari shu qiymatdan absolyut URL yasaydi.

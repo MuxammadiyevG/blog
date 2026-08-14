@@ -1,0 +1,21 @@
+{
+  // Cloudflare Workers static assets. The Worker itself has no code — it only serves
+  // what Hugo builds into ./public.
+  //
+  // Build command in the dashboard:   hugo --minify
+  // Deploy command in the dashboard:  npx wrangler deploy
+  // Environment variable:             HUGO_VERSION = 0.164.0
+  "name": "blog",
+  "compatibility_date": "2026-07-27",
+
+  "assets": {
+    "directory": "./public",
+
+    // Hugo emits directory-style URLs (/posts/hello/index.html), so requests should
+    // resolve with or without the trailing slash.
+    "html_handling": "auto-trailing-slash",
+
+    // Serve the generated 404.html instead of a bare Cloudflare error page.
+    "not_found_handling": "404-page"
+  }
+}
