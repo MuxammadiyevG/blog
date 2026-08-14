@@ -42,7 +42,7 @@ defaultContentLanguageInSubdir = false
   twitter = "GMuxammadi46746"
   # "block" = hand-drawn banner at readable size
   # "image" = picture converted to text, drawn at 2.2px
-  heroArtScale = "image"
+  heroArtScale = "block"
 
 [taxonomies]
   tag = "tags"
