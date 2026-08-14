@@ -211,17 +211,19 @@ Surat-artga o'tsang `heroArtScale = "image"` qil.
 
 Oltita tema: `blueprint` (yorug', ko'k), `amber` (qorong'i, sariq), `neon` (qorong'i,
 siyon), `phosphor` (qorong'i, yashil), `paper` (yorug', sepia), `mono` (qorong'i,
-rangsiz). Ustiga `auto` — tizim sozlamasiga ergashadi.
+rangsiz).
+
+Odatiy tema — **blueprint**, tashrif buyuruvchining tizim sozlamasidan qat'i nazar.
+`prefers-color-scheme` ataylab o'qilmaydi: qorong'i tizimli odam ham blueprint'da
+ochadi va xohlasa menyudan boshqasini tanlaydi. Menyudagi `default` shu holatga
+qaytaradi.
 
 Hammasi `assets/css/style.css` boshida, har biri bir xil o'zgaruvchi nomlarini
 belgilaydi:
 
 ```css
-:root, :root[data-theme="blueprint"] { ... }   /* yorug' odatiy */
+:root, :root[data-theme="blueprint"] { ... }   /* odatiy */
 :root[data-theme="amber"] { ... }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) { ... }              /* tanlanmagan bo'lsa: amber */
-}
 :root[data-theme="neon"] { ... }
 ```
 

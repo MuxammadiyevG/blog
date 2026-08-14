@@ -5,7 +5,7 @@
   var buttons = menu.querySelectorAll('[data-theme-set]');
 
   function current() {
-    return document.documentElement.getAttribute('data-theme') || 'auto';
+    return document.documentElement.getAttribute('data-theme') || 'default';
   }
 
   function mark() {
@@ -21,7 +21,7 @@
       var choice = btn.getAttribute('data-theme-set');
       var root = document.documentElement;
 
-      if (choice === 'auto') {
+      if (choice === 'default') {
         root.removeAttribute('data-theme');
         try { localStorage.removeItem('theme'); } catch (e) {}
       } else {

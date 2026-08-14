@@ -68,9 +68,12 @@
    Six named themes. Every one defines the same variable names, so the rest of the
    stylesheet never mentions a colour directly.
 
-   :root                    blueprint, the light default
-   @media dark, unset       amber, for a dark system with no explicit choice
+   :root                    blueprint — the default, whatever the system prefers
    :root[data-theme="…"]    an explicit choice, which always wins
+
+   The system's prefers-color-scheme is deliberately not consulted: a visitor with a
+   dark desktop still lands on blueprint, and picks another theme from the menu if
+   they want one.
 
    Contrast for every theme is checked by docs/contrast-check.js, which reads the
    values straight out of this file. Run it after touching anything here.          */
@@ -140,40 +143,6 @@
   --syn-add:     #a8cf6a;
   --syn-del-bg:  rgba(255,122,104,.10);
   --syn-add-bg:  rgba(168,207,106,.10);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --bg:       #0d0b08;
-    --sheet:    #14110c;
-    --ink:      #ffb642;
-    --ink-2:    #e6a83f;
-    --muted:    #b28a4e;
-    --dim:      #8a6c3d;
-    --faint:    #4a3a24;
-    --link:     #ff9440;
-    --link-hi:  #ffbb7a;
-    --code:     #ff8a5c;
-    --tag:      #a8cf6a;
-    --rule:     #5e4a2c;
-
-    --code-bg:      #0a0806;
-    --code-border:  #3a2e1c;
-    --sheet-shadow: 0 0 0 1px rgba(255,182,66,.07), 0 8px 32px rgba(0,0,0,.55);
-
-    --syn-key:     #ff9a52;
-    --syn-str:     #cddc86;
-    --syn-com:     #9b7f52;
-    --syn-num:     #ffd479;
-    --syn-fn:      #ffc247;
-    --syn-tag:     #ffab63;
-    --syn-op:      #e6a83f;
-    --syn-builtin: #ff8a3d;
-    --syn-del:     #ff7a68;
-    --syn-add:     #a8cf6a;
-    --syn-del-bg:  rgba(255,122,104,.10);
-    --syn-add-bg:  rgba(168,207,106,.10);
-  }
 }
 
 /* neon — cyan and blue on near-black */

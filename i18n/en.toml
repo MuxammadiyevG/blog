@@ -70,5 +70,5 @@ other = "Posts"
 [fieldMirror]
 other = "Mirror"
 
-[themeAuto]
-other = "auto"
+[themeDefault]
+other = "default"

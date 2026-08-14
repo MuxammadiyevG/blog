@@ -191,8 +191,8 @@ Aniq qiymatlar `assets/css/style.css` boshida — yagona manba shu. Bu yerda tak
 chunki bir nechta qiymat AA kontrastiga yetish uchun sozlangan va ikki nusxa bir-biridan
 uzoqlashib ketardi. O'zgartirganda `node docs/contrast-check.js` ni qayta ishga tush.
 
-Tartib: tizim sozlamasi odatiy holat. Foydalanuvchi tugmani bossa, tanlov `localStorage`
-ga yoziladi va tizim sozlamasini bosib o'tadi.
+Tartib: odatiy holat — blueprint (20-bo'limga qara). Foydalanuvchi menyudan tanlasa,
+tanlov `localStorage` ga yoziladi.
 
 Kontrast talabi: asosiy matn (`--ink` / `--sheet`) ikkala temada ham WCAG AA (4.5:1) dan
 past bo'lmasligi kerak. So'nik matn (`--muted`) uchun 4.5:1 maqsad, minimum 3:1.
@@ -567,3 +567,28 @@ yiqilgan edi (`neon` va `mono` ning ajratgich chizig'i juda so'nik), tuzatildi.
 | Keyingi yuklashda saqlanadi | `data-theme="paper"` |
 | Eski `dark` qiymati ko'chadi | `data-theme="amber"` |
 | CSP buzilishi | 0 (uch sahifada) |
+
+
+## 20. Odatiy tema qat'iy blueprint qilindi (2026-07-27)
+
+19.1 da odatiy holat tizim sozlamasiga bog'liq edi: yorug' tizimda blueprint, qorong'i
+tizimda amber. Bu bekor qilindi.
+
+```css
+/* oldin */
+:root { blueprint }
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) { amber } }
+
+/* hozir */
+:root { blueprint }
+```
+
+`prefers-color-scheme` endi umuman o'qilmaydi. Qorong'i tizimli tashrif buyuruvchi ham
+blueprint'da ochadi.
+
+Menyudagi birinchi element `auto` dan `default` (uz: `odatiy`) ga o'zgartirildi. Sabab
+nomda: element tizim sozlamasiga ergashmay qo'ygach, uni "auto" deb atash noto'g'ri
+bo'lardi. Vazifasi o'zgarmadi — `data-theme` atributini olib tashlaydi va `localStorage`
+ni tozalaydi, ya'ni saytni odatiy holatga qaytaradi.
+
+7.1 dagi "tizim sozlamasi odatiy holat" jumlasi endi amal qilmaydi.
