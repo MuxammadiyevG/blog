@@ -8,10 +8,10 @@ draft: false
 summary: "Tinyproxy Transfer-Encoding'ni strcmp() bilan solishtiradi, shuning uchun `Chunked` undan o'tib ketadi, backend esa uni tan oladi — katta-kichik harf xatosi request desinxronizatsiyasiga aylanadi."
 ---
 
-Bu safar butun gap bitta belgida. Tinyproxy so'rov chunked ekanini `Transfer-Encoding`
-sarlavhasini `chunked` degan aynan matn bilan solishtirib aniqlaydi — `strcmp()` orqali, u esa
+Bu safar butun gap bitta belgida. Tinyproxy so'rov chunked yoki yo'qligini `Transfer-Encoding`
+sarlavhasini aniq `chunked` matni bilan solishtirib aniqlaydi — `strcmp()` orqali, bu esa
 katta-kichik harfni farqlaydi. Katta C bilan `Chunked` yuborsang, proxy "chunked emas" deydi,
-uning orqasidagi backend esa "chunked" deydi. Shu kelishmovchilik — request desinxronizatsiyasi,
+orqasidagi backend esa "chunked" deydi. Ana shu kelishmovchilik — request desinxronizatsiyasi,
 va u **CVE-2026-31842** sifatida ro'yxatga olingan.
 
 Bu yerga tushadigan boshqa narsalardan farqli o'laroq, bu ochiq — CVE bor va
@@ -33,9 +33,9 @@ HTTP tananing qayerda tugashini belgilashning ikki yo'lini beradi:
 
 Agar so'rov ikki xil o'qilishi mumkin bo'lgan signallar olib yursa, va proxy birontasiga ishonsa,
 backend esa boshqasiga, ulanishning ikki uchi bayt oqimini turli nuqtalarda kesadi. Proxy
-"keyingi so'rov" deb o'ylagan baytlarni backend oldingisiga yopishtiradi — yoki backend proxy
-kelmaydi deb hal qilib bo'lgan tanani kutib o'tiraveradi. Ikkala natija ham yomon, turlicha
-yomon.
+"keyingi so'rov" deb o'ylagan baytlarni backend oldingisiga yopishtirib qo'yadi — yoki aksincha,
+backend proxy "endi tana kelmaydi" deb qaror qilgan tanani kutib o'tiraveradi. Ikkovi ham yomon,
+har biri o'zicha yomon.
 
 ## Chunked aslida qanday ko'rinadi
 
@@ -95,12 +95,12 @@ esa yo'q. Endi ikkovi tananing umuman chunked ekani haqida kelishmaydi.
 
 ## Birinchi oqibat: xavfsizlik filtrini chetlab o'tish
 
-So'rov tanasini tushunish uchun Tinyproxy'ga tayanadigan har narsa Tinyproxy'ning ko'r nuqtasini
-meros oladi. Proxy yo'lining oldida — yoki ichida — turgan WAF yoki filtr o'zining ruxsat/bloklash
-qarorini tanaga *proxy* uni qanday shakllantirgan bo'lsa, shunga qarab qabul qiladi. Agar proxy
-`Chunked` so'rovni noto'g'ri shakllantirsa, filtr noto'g'ri baytlarni tekshiradi, va to'g'ri
-parse qilingan so'rovda bloklanadigan kontent proxy noto'g'ri o'qigan qismda o'tib ketishi
-mumkin. Katta harf — tekshiruvdan tana kontentini yashirib o'tkazish usuli.
+So'rov tanasini tushunishda Tinyproxy'ga tayanadigan har qanday narsa uning ko'r nuqtasini ham
+meros qilib oladi. Proxy yo'lining oldida — yoki ichida — turgan WAF yoxud filtr o'zining
+ruxsat/bloklash qarorini tanani *proxy* qanday bo'laklagani asosida chiqaradi. Proxy `Chunked`
+so'rovni noto'g'ri bo'laklasa, filtr ham noto'g'ri baytlarni tekshiradi, va to'g'ri o'qilgan
+so'rovda bloklanadigan kontent proxy adashib o'qigan qismda bemalol o'tib ketishi mumkin. Bitta
+katta harf — tekshiruvni chetlab, tana ichiga zararli narsani olib kirish yo'li.
 
 ## Ikkinchi oqibat: xizmatni rad etish (DoS)
 
@@ -111,8 +111,9 @@ bo'lak yubormaydigan so'rov jo'nat:
   qachon kelmaydigan `0\r\n\r\n` ni kutib bloklanadi.
 - O'sha backend ishchisi (worker) endi ulanishni ochiq ushlab qotib qoladi.
 
-Buni takrorla. Har qotgan so'rov bitta ishchi oqimini band qiladi. Oz sonli ulanish bilan
-backend'ning ishchilar hovuzini tugatasan, va qonuniy so'rovlarga joy qolmaydi — resurslar tanqisligi, crash talab qilinmaydi.
+Buni takrorlayver. Har bir qotgan so'rov bitta ishchi (worker) oqimini band qilib turadi. Oz
+sonli ulanish bilanoq backend'ning ishchilar hovuzini tugatib qo'yasan — qonuniy so'rovlarga joy
+qolmaydi. Resurslar tugaydi, biror narsani ishdan chiqarishga ham hojat qolmaydi.
 
 ## Proof of concept
 
@@ -146,8 +147,8 @@ printf 'POST / HTTP/1.1\r\nHost: 127.0.0.1:9000\r\nTransfer-Encoding: chunked\r\
   | timeout 5 nc 127.0.0.1 8888
 ```
 
-Tinyproxy buni ham chunked deb o'qiydi, shakllashni o'zi hal qiladi, va almashinuv toza
-yakunlanadi. Bir xil parse, desync yo'q.
+Tinyproxy buni ham chunked deb o'qiydi, tana chegarasini o'zi hal qiladi, va almashinuv toza
+yakunlanadi. Ikkovi bir xil parse qildi, desync yo'q.
 
 **Ekspluatatsiya — katta harfli `Chunked`, tugatuvchi bo'laksiz:**
 
@@ -182,12 +183,12 @@ return data ? !strcmp (data, "chunked") : 0;
 return data ? !strcasecmp (data, "chunked") : 0;
 ```
 
-Bu bir qatordan uzoqroq yashaydigan umumiy saboq: **HTTP sarlavhasini matn sifatida solishtirib
-xavfsizlik yoki shakllash qarorini qabul qiladigan har qanday kod buni harfga befarq qilishi
-kerak.** Sarlavha maydon nomlari va aniqlangan qiymatlarning ko'pi spetsifikatsiya bo'yicha
-harfga befarq, va buni unutgan proxy ertami-kechmi orqasidagi server bilan kelishmay qoladi.
-Bitta ulanishda ikki HTTP parserning kelishmasligi hech qachon bezak masalasi emas — bu request
-smuggling'ning xom ashyosi.
+Bu bitta qatordan ko'ra uzoqroq yashaydigan umumiy saboq: **HTTP sarlavhasini matn sifatida
+solishtirib xavfsizlik yoki tana chegarasi haqida qaror qabul qiladigan har qanday kod buni
+harfga befarq bajarishi shart.** Sarlavha nomlari va belgilangan qiymatlarning aksariyati
+spetsifikatsiya bo'yicha harfga befarq, buni unutgan proxy esa ertami-kechmi orqasidagi server
+bilan kelishmay qoladi. Bitta ulanishda ikki HTTP parserning bir-biri bilan kelishmasligi hech
+qachon shunchaki tashqi nuqson emas — bu request smuggling'ning xom ashyosi.
 
 ## Tafsilotlar
 
