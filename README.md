@@ -111,13 +111,6 @@ Mermaid bundle'i (3.4 MB) `assets/js/mermaid.min.js` da lokal saqlanadi va **faq
 
 To'liq namuna: `content/en/posts/diagram-reference.md` (doimiy qoralama).
 
-## Yangi post — brauzer
-
-`https://<sayt>/admin` — Sveltia CMS. Forma to'ldirasan, `Publish` bosasan, u GitHub
-repo'siga xuddi shu `.md` faylni commit qiladi. Ikki yo'l bir xil manbaga yozadi.
-
-Ishlashi uchun avval OAuth sozlanishi kerak, pastga qara.
-
 ## Deploy — Cloudflare Pages
 
 1. Repo'ni GitHub'ga push qil (`MuxammadiyevG/blog`)
@@ -133,60 +126,36 @@ Ishlashi uchun avval OAuth sozlanishi kerak, pastga qara.
 4. Deploy tugagach `hugo.toml` dagi `baseURL` ni haqiqiy manzilga o'zgartir va push qil.
    Bu muhim — RSS va OG teglari shu qiymatdan absolyut URL yasaydi.
 
-## CMS kirishini sozlash
+Shundan keyin har `main` branch'ga push avtomatik deploy'ni ishga tushiradi. Boshqa hech
+narsa bosilmaydi:
 
-Sveltia CMS GitHub'ga sening nomingdan yozadi. Token almashinuvini Cloudflare Worker
-bajaradi.
+```
+git push  →  GitHub webhook  →  Cloudflare build (hugo --minify)  →  deploy  (~25s)
+```
 
-### 1. GitHub OAuth App
+Pull request ochsang, unga alohida preview manzili beriladi; `main` ga tegmaydi.
 
-GitHub → Settings → Developer settings → OAuth Apps → New OAuth App
+## Admin paneli yo'q
 
-| Maydon | Qiymat |
+Ataylab. Post yozish yo'li bitta: markdown fayl + `git push`.
+
+Bu qaror butun bir xavfsizlik toifasini olib tashlaydi — saytda GitHub tokeni yo'q,
+brauzerda saqlanadigan sir yo'q, `/admin` sahifasi yo'q, audit qilinmagan uchinchi tomon
+redaktori yo'q, deploy qilinadigan OAuth Worker yo'q.
+
+Agar keyin brauzerdan yozish kerak bo'lsa, ikki yo'l bor edi: Sveltia CMS (fine-grained
+PAT bilan, Worker'siz) yoki o'z panelimiz (~10 KB, GitHub Contents API'ga bitta `PUT`).
+Ikkalasi ham qaytarib qo'shsa bo'ladi.
+
+## Vendored fayllar
+
+Tashqi so'rov bo'lmasligi uchun hamma narsa repo ichida. Versiya va sha256 —
+`docs/vendored.md` da.
+
+| Fayl | Nima |
 |---|---|
-| Application name | `blog cms` |
-| Homepage URL | saytning manzili |
-| Authorization callback URL | `https://<worker>.workers.dev/callback` |
-
-`Client ID` va yangi `Client secret` ni ol.
-
-### 2. Worker
-
-```bash
-git clone https://github.com/sveltia/sveltia-cms-auth
-cd sveltia-cms-auth
-npx wrangler deploy
-npx wrangler secret put GITHUB_CLIENT_ID
-npx wrangler secret put GITHUB_CLIENT_SECRET
-npx wrangler secret put ALLOWED_DOMAINS      # saytning domeni
-```
-
-O'zgaruvchi nomlari va callback yo'lini o'sha repo'ning README'si bilan solishtir —
-versiya bilan o'zgarishi mumkin.
-
-### 3. Ulash
-
-`static/admin/config.yml` dagi `base_url` ni Worker manziliga o'zgartir:
-
-```yaml
-base_url: https://sveltia-cms-auth.<sening-subdomening>.workers.dev
-```
-
-### Xavfsizlik eslatmalari
-
-- `GITHUB_CLIENT_SECRET` faqat Worker secret'ida turadi. Repo'ga, `config.yml` ga
-  tushmasligi kerak.
-- Scope `public_repo` — bu **akkauntning barcha ochiq repolariga** yozish huquqi.
-  Klassik OAuth App'ni bitta repo bilan cheklab bo'lmaydi. Torroq ruxsat kerak bo'lsa,
-  GitHub App'ga o'tish kerak (ko'proq sozlash).
-- `/admin` sahifasi ochiq — bu static fayl, yashirib bo'lmaydi. U faqat forma; yozish
-  huquqi GitHub OAuth'dan keladi.
-- `static/admin/sveltia-cms.js` ataylab lokal saqlangan, CDN'dan yuklanmaydi: bu skript
-  GitHub tokenini ushlaydi, demak buzilgan CDN = buzilgan repo. Versiya va sha256
-  `static/admin/VERSION.txt` da.
-- Mermaid ham lokal (`assets/js/mermaid.min.js`, versiya `VERSION.txt` da) va
-  `securityLevel: 'strict'` bilan ishga tushadi — chizma yorlig'i ichidagi HTML
-  bajarilmaydi. CMS tokeni shu domenda turgani uchun bu muhim.
+| `static/fonts/plex-mono-*.woff2` | IBM Plex Mono, OFL |
+| `assets/js/mermaid.min.js` | mermaid 11.16.0, faqat chizmali sahifada yuklanadi |
 
 ## Writeup chiqarishdan oldin
 

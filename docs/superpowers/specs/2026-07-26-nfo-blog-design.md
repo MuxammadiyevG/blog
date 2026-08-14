@@ -24,8 +24,8 @@ logotipi, o'z layout tafsilotlari.
 | Generator | Hugo | Bitta binary, tez build, markdown, tayyor tema ishlatilmaydi |
 | Tema | Noldan yoziladi | Butun CSS nazorat ostida bo'lishi kerak |
 | Kontent | `content/posts/*.md`, git'da | Yagona manba, versiyalanadi |
-| Brauzer redaktori | Sveltia CMS | Decap'ning faol forki, config formati bir xil |
-| Auth | GitHub OAuth + Cloudflare Worker | CMS uchun standart yo'l |
+| Brauzer redaktori | ~~Sveltia CMS~~ | **Bekor qilindi, 17-bo'limga qara** |
+| Auth | ~~GitHub OAuth + Worker~~ | **Bekor qilindi — redaktor yo'q, auth ham kerak emas** |
 | Hosting | Cloudflare Pages | Bepul, git'ga ulanadi, Worker bilan bitta panel |
 | Rang | Yorug' + qorong'i, almashtirgich bilan | Yorug' = ko'k blueprint, qorong'i = amber CRT |
 | Shrift | IBM Plex Mono, o'z serverimizdan | Tashqi so'rov yo'q, tezroq |
@@ -108,6 +108,10 @@ raqam kerak bo'lsa frontmatter'ga `id:` yoziladi — u hisoblangan qiymatni bosi
 Qabul qilingan yechim: odatiy holatda hisoblanadi, `id:` — ixtiyoriy zaxira.
 
 ## 6. Brauzer redaktori va kirish
+
+> **Bu bo'lim endi amalda emas.** Sveltia CMS 2026-07-27 da olib tashlandi, 17-bo'limga
+> qara. Bo'lim tarix uchun qoldirilgan: qaror qanday olinganini va nima uchun
+> qaytarilganini ko'rsatadi.
 
 Sveltia CMS `static/admin/` da joylashadi, GitHub'ni backend sifatida ishlatadi.
 
@@ -420,3 +424,43 @@ Mermaid `securityLevel: 'strict'` bilan ishga tushadi — yorliq ichidagi HTML
 bajarilmaydi. Bu shu domenda CMS tokeni turgani uchun majburiy shart. Tema
 almashtirilganda chizmalar qayta chiziladi, chunki mermaid ranglarni SVG ichiga
 yozib qo'yadi.
+
+
+## 17. Brauzer redaktoridan voz kechish (2026-07-27)
+
+Sveltia CMS va u bilan bog'liq hamma narsa olib tashlandi: `static/admin/` (1.9 MB
+bundle, `config.yml`, `index.html`), OAuth App, Cloudflare Worker.
+
+### 17.1 Nima uchun
+
+Redaktor GitHub tokenini brauzerda, saytning o'z origin'ida saqlardi
+(`localStorage` + IndexedDB — bundle tekshirilib tasdiqlangan). Natijada zanjir:
+
+```
+blog domenida XSS  →  token o'qiladi  →  repo'ga commit  →  Pages avtomatik build
+                                                        →  jonli sayt hujumchida
+```
+
+Bitta yozish yo'li (`git push`) qolgach, bu zanjirning boshlanish nuqtasi yo'qoladi:
+saqlanadigan token yo'q, `/admin` sahifasi yo'q, audit qilinmagan 1.9 MB kod yo'q,
+deploy qilinadigan Worker yo'q.
+
+### 17.2 Ko'rib chiqilgan muqobillar
+
+| Variant | Nega tanlanmadi |
+|---|---|
+| Sveltia + fine-grained PAT | Worker'siz ishlaydi va ruxsat bitta repo bilan cheklanadi (Sveltia'da "Sign In Using Access Token" rejimi bor). Lekin token baribir brauzerda, 1.9 MB kod baribir audit qilinmagan |
+| O'z panelimiz (~10 KB) + PAT | Kod kichik va o'qilgan bo'lardi, lekin token muammosi qolardi va yozib chiqish + qo'llab-quvvatlash kerak |
+| Sveltia + OAuth Worker | Eng keng ruxsat (`public_repo` — barcha ochiq repolar) va eng ko'p harakatlanuvchi qism |
+
+### 17.3 Natija
+
+12-bo'limdagi "doiradan tashqarida" ro'yxatiga brauzer redaktori qo'shildi.
+
+5-bo'limdagi kontent modeli o'zgarmadi. 4-bo'limdagi "ikki yozish yo'li" bitta bo'ldi:
+
+```
+markdown fayl  →  git push  →  Cloudflare Pages webhook  →  hugo --minify  →  deploy
+```
+
+Keyin kerak bo'lsa qaytarish qiyin emas — 17.2 dagi birinchi variant eng arzon yo'l.
