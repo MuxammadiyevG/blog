@@ -8,6 +8,13 @@
   "name": "blog",
   "compatibility_date": "2026-07-27",
 
+  // Both are on by default; set explicitly so the deploy log stops guessing.
+  // workers.dev is the live address until a custom domain is attached.
+  "workers_dev": true,
+  // No PR-preview workflow here, and every preview URL is another public copy
+  // of the site, so keep them off.
+  "preview_urls": false,
+
   "assets": {
     "directory": "./public",
 
